@@ -227,7 +227,7 @@ Antes de contribuir, não envie amostras reais de voz, modelos pesados, caches, 
 
 Leia [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código de Conduta](CODE_OF_CONDUCT.md) antes de abrir uma contribuição.
 
-Contato para ideias e dúvidas sobre contribuições: [bellete.afirma.cc@gmail.com](mailto:bellete.afirma.cc@gmail.com).
+Contato para ideias e dúvidas sobre contribuições: [app@afirma.cc](mailto:app@afirma.cc).
 
 ## Licença
 

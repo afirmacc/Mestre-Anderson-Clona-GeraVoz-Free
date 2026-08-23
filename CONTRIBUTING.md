@@ -13,7 +13,7 @@ Obrigada por contribuir. O projeto está em pré-lançamento e prioriza seguran�
 ## Canais de contribuição
 
 - Para código, correções e documentação, prefira Issues e Pull Requests no GitHub.
-- Para dúvidas, ideias ou contato direto sobre contribuições, escreva para [bellete.afirma.cc@gmail.com](mailto:bellete.afirma.cc@gmail.com).
+- Para dúvidas, ideias ou contato direto sobre contribuições, escreva para [app@afirma.cc](mailto:app@afirma.cc).
 - Não envie amostras de voz, dados biométricos, credenciais ou outros dados sensíveis por e-mail.
 
 ## Ambiente de desenvolvimento
