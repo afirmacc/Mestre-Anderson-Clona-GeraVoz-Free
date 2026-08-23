@@ -126,6 +126,8 @@ Instale a partir de um clone verificado deste repositório:
 
 O script pede confirmação antes de instalar ferramentas de sistema ou baixar o modelo. Uma segunda execução revalida e reutiliza os componentes corretos.
 
+Na `0.1.0rc2`, o instalador reconhece o cache Hugging Face, resolve vínculos equivalentes entre `/tmp` e `/private/tmp`, evita reinstalar o mesmo pacote, executa smoke test do modelo e permite smoke test vocal explícito. O wheel também inclui os recursos exigidos pela CLI.
+
 ## Instalação inteligente
 
 O instalador será idempotente. Antes de modificar o equipamento, ele deverá verificar:

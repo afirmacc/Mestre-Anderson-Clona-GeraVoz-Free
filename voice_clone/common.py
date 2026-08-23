@@ -11,6 +11,19 @@ APP_DIR = Path(os.environ.get("VOICE_CLONE_HOME", Path.home() / ".local/share/vo
 PROFILES_DIR = Path(os.environ.get("VOICE_CLONE_PROFILES", APP_DIR / "profiles"))
 REPORTS_DIR = Path(os.environ.get("VOICE_CLONE_REPORTS", APP_DIR / "reports"))
 STATE_FILE = APP_DIR / "installation-state.json"
+MODEL_CACHE = APP_DIR / "model-cache"
+MODEL_CACHE_NAMES = (
+    "hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit",
+    "models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit",
+)
+
+
+def model_cache_path() -> Path | None:
+    for relative in MODEL_CACHE_NAMES:
+        candidate = MODEL_CACHE / relative
+        if candidate.is_dir():
+            return candidate
+    return None
 
 
 class VoiceCloneError(RuntimeError):

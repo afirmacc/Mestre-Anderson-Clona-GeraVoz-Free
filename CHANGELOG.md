@@ -4,6 +4,16 @@ Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-B
 
 ## Não lançado
 
+### Corrigido em 0.1.0rc2
+
+- detecção do cache Hugging Face sob `model-cache/hub`;
+- comparação canônica de vínculos Hermes entre `/tmp` e `/private/tmp`;
+- reutilização do pacote Python quando a versão instalada já é válida;
+- reparo seletivo por inventário dos componentes;
+- smoke test obrigatório de backend/modelo e teste vocal opcional por perfil;
+- `status` agora exige modelo, Whisper, FFmpeg, estado e integração Hermes;
+- wheel inclui instalador, `SKILL.md`, schemas e templates.
+
 ### Adicionado
 
 - estrutura inicial de Agent Skill;

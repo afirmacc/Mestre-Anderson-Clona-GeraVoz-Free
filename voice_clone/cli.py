@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
 
 from . import __version__
@@ -62,9 +64,15 @@ def parser() -> argparse.ArgumentParser:
 
 
 def _run_installer(repair: bool = False) -> int:
-    script = Path(__file__).resolve().parents[1] / "installers" / "install-macos.sh"
-    command = [str(script)] + (["--repair"] if repair else [])
-    return subprocess.run(command, check=False).returncode
+    source_script = Path(__file__).resolve().parents[1] / "installers" / "install-macos.sh"
+    wheel_script = Path(sysconfig.get_path("data")) / "share/ia-skill-clonagem-voz/install-macos.sh"
+    script = source_script if source_script.is_file() else wheel_script
+    if not script.is_file():
+        raise VoiceCloneError("Instalador não incluído no pacote. Reinstale a versão oficial.")
+    command = ["bash", str(script)] + (["--repair"] if repair else [])
+    environment = os.environ.copy()
+    environment["VOICE_CLONE_INVOKING_PYTHON"] = sys.executable
+    return subprocess.run(command, check=False, env=environment).returncode
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -93,8 +101,13 @@ def main(argv: list[str] | None = None) -> int:
             if args.profile:
                 _print(run_voice_suite(args.profile, args.cases))
                 return 0
-            command = [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"]
-            return subprocess.run(command, cwd=Path(__file__).resolve().parents[1], check=False).returncode
+            source_root = Path(__file__).resolve().parents[1]
+            if (source_root / "tests").is_dir():
+                command = [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"]
+                return subprocess.run(command, cwd=source_root, check=False).returncode
+            result = installation_status()
+            _print(result)
+            return 0 if result["installation_valid"] else 3
         else:
             return 2
         return 0

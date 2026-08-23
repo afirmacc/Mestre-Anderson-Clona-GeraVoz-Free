@@ -1,0 +1,4 @@
+include SKILL.md
+include installers/install-macos.sh
+recursive-include schemas *.json
+recursive-include templates *.json *.txt

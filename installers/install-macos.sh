@@ -4,11 +4,13 @@ set -euo pipefail
 REPAIR=0
 YES=0
 SKIP_MODEL=0
+SMOKE_PROFILE=""
 for arg in "$@"; do
   case "$arg" in
     --repair) REPAIR=1 ;;
     --yes) YES=1 ;;
     --skip-model) SKIP_MODEL=1 ;;
+    --smoke-profile=*) SMOKE_PROFILE="${arg#*=}" ;;
     *) echo "Argumento desconhecido: $arg" >&2; exit 2 ;;
   esac
 done
@@ -19,10 +21,21 @@ if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
 fi
 
 APP_DIR="${VOICE_CLONE_HOME:-$HOME/.local/share/voice-clone}"
-VENV="$APP_DIR/runtime/qwen3-mlx-py312"
+DEFAULT_VENV="$APP_DIR/runtime/qwen3-mlx-py312"
+VENV="$DEFAULT_VENV"
 MODEL_CACHE="$APP_DIR/model-cache"
 STATE="$APP_DIR/installation-state.json"
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd -P "$(dirname "$0")" && pwd)"
+if [[ -f "$SCRIPT_DIR/../pyproject.toml" ]]; then
+  PROJECT_DIR="$(cd -P "$SCRIPT_DIR/.." && pwd)"
+  SKILL_SOURCE="$PROJECT_DIR/SKILL.md"
+else
+  PROJECT_DIR=""
+  SKILL_SOURCE="$SCRIPT_DIR/SKILL.md"
+  if [[ -n "${VOICE_CLONE_INVOKING_PYTHON:-}" && -x "$VOICE_CLONE_INVOKING_PYTHON" ]]; then
+    VENV="$(cd -P "$(dirname "$VOICE_CLONE_INVOKING_PYTHON")/.." && pwd)"
+  fi
+fi
 HERMES_SKILLS_DIR="${HERMES_SKILLS_DIR:-$HOME/.hermes/skills/local}"
 HERMES_TARGET="$HERMES_SKILLS_DIR/clonar-voz-local"
 
@@ -72,16 +85,27 @@ assert m.version("mlx-audio") == "0.4.7"
 assert m.version("mlx-whisper")
 PY
 then
-  echo "REUTILIZADO: MLX 0.32.0 e MLX-Audio 0.4.7"
+  echo "REUTILIZADO: MLX 0.32.0, MLX-Audio 0.4.7 e MLX-Whisper"
 else
   "$VENV/bin/python" -m pip install --upgrade pip
   "$VENV/bin/python" -m pip install "mlx==0.32.0" "mlx-audio==0.4.7" "numpy>=1.26,<3" "mlx-whisper>=0.4,<1"
 fi
 
-"$VENV/bin/python" -m pip install --no-deps --upgrade "$PROJECT_DIR"
+if "$VENV/bin/python" - <<'PY' >/dev/null 2>&1
+import importlib.metadata as m
+assert m.version("ia-skill-clonagem-voz") == "0.1.0rc2"
+PY
+then
+  echo "REUTILIZADO: pacote ia-skill-clonagem-voz 0.1.0rc2"
+elif [[ -n "$PROJECT_DIR" ]]; then
+  "$VENV/bin/python" -m pip install --no-deps "$PROJECT_DIR"
+else
+  echo "BLOQUEADO_VOZ: pacote instalado não corresponde ao instalador e não há fonte para reparo." >&2
+  exit 3
+fi
 
 if [[ "$SKIP_MODEL" -eq 0 ]]; then
-  if [[ -d "$MODEL_CACHE/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit" ]]; then
+  if [[ -d "$MODEL_CACHE/hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit" || -d "$MODEL_CACHE/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit" ]]; then
     echo "REUTILIZADO: cache do modelo"
   else
     confirm "Autoriza baixar aproximadamente 3 GB do modelo oficial?" || exit 4
@@ -107,15 +131,56 @@ write_json(Path("$STATE"), {
 PY
 
 mkdir -p "$HERMES_SKILLS_DIR"
-if [[ -L "$HERMES_TARGET" && "$(readlink "$HERMES_TARGET")" == "$PROJECT_DIR" ]]; then
+if [[ -n "$PROJECT_DIR" && -L "$HERMES_TARGET" && "$(cd -P "$HERMES_TARGET" && pwd)" == "$PROJECT_DIR" ]]; then
   echo "REUTILIZADO: integração Hermes"
 elif [[ -e "$HERMES_TARGET" || -L "$HERMES_TARGET" ]]; then
-  echo "ATENÇÃO: já existe uma skill Hermes em $HERMES_TARGET; ela foi preservada."
-  echo "Revise-a manualmente antes de substituir ou remover."
-else
+  if [[ -f "$HERMES_TARGET/.voice-clone-managed" && -f "$SKILL_SOURCE" ]]; then
+    cp "$SKILL_SOURCE" "$HERMES_TARGET/SKILL.md"
+    echo "ATUALIZADO: integração Hermes gerenciada"
+  else
+    echo "ATENÇÃO: já existe uma skill Hermes em $HERMES_TARGET; ela foi preservada."
+    echo "Revise-a manualmente antes de substituir ou remover."
+  fi
+elif [[ -n "$PROJECT_DIR" ]]; then
   ln -s "$PROJECT_DIR" "$HERMES_TARGET"
   echo "CRIADO: vínculo da skill no Hermes"
+elif [[ -f "$SKILL_SOURCE" ]]; then
+  mkdir -p "$HERMES_TARGET"
+  cp "$SKILL_SOURCE" "$HERMES_TARGET/SKILL.md"
+  touch "$HERMES_TARGET/.voice-clone-managed"
+  echo "CRIADO: skill empacotada no Hermes"
+else
+  echo "BLOQUEADO_VOZ: recurso SKILL.md ausente no pacote." >&2
+  exit 3
 fi
 
+if [[ "$SKIP_MODEL" -eq 0 ]]; then
+  echo "Executando smoke test técnico..."
+  HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/python" - <<'PY'
+from mlx_audio.tts.utils import load_model
+load_model("mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit")
+print("SMOKE OK: backend e modelo carregados")
+PY
+
+else
+  echo "SMOKE IGNORADO: modelo omitido por --skip-model"
+fi
+
+if [[ -n "$SMOKE_PROFILE" ]]; then
+  if [[ "$SKIP_MODEL" -eq 1 ]]; then
+    echo "BLOQUEADO_VOZ: --smoke-profile não pode ser usado com --skip-model." >&2
+    exit 3
+  fi
+  SMOKE_OUT="$APP_DIR/reports/install-smoke.wav"
+  HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/voice-clone" synthesize \
+    --profile "$SMOKE_PROFILE" \
+    --text "Este é um teste local autorizado após a instalação." \
+    --output "$SMOKE_OUT"
+  HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/voice-clone" verify \
+    --audio "$SMOKE_OUT" \
+    --text "Este é um teste local autorizado após a instalação." \
+    --manifest "$APP_DIR/reports/install-smoke.manifest.json"
+fi
+
+HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/voice-clone" status
 echo "Instalação/revalidação concluída."
-echo "Execute: $VENV/bin/voice-clone status"

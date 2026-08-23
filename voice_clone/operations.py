@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import importlib.metadata
-import json
+import os
 import platform
 import re
+import shutil
+import sys
 import unicodedata
 from difflib import SequenceMatcher
 from datetime import datetime, timezone
@@ -11,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 from .audio import probe
-from .common import REPORTS_DIR, STATE_FILE, VoiceCloneError, read_json, sha256, write_json
+from .common import REPORTS_DIR, STATE_FILE, VoiceCloneError, model_cache_path, read_json, sha256, write_json
 from .profile import validate_profile
 from .qwen3_mlx import synthesize as mlx_synthesize
 
@@ -29,11 +31,24 @@ def status() -> dict:
         "voice_clone": __version__,
         "mlx": package_version("mlx"),
         "mlx_audio": package_version("mlx-audio"),
+        "mlx_whisper": package_version("mlx-whisper"),
+        "ffmpeg": shutil.which("ffmpeg"),
+        "ffprobe": shutil.which("ffprobe"),
+        "git": shutil.which("git"),
+        "python_executable": sys.executable,
+        "model_cache": str(model_cache_path()) if model_cache_path() else None,
+        "state_file": str(STATE_FILE) if STATE_FILE.is_file() else None,
     }
+    hermes_root = Path(os.environ.get("HERMES_SKILLS_DIR", Path.home() / ".hermes/skills/local"))
+    hermes_target = hermes_root / "clonar-voz-local"
+    components["hermes_skill"] = str(hermes_target.resolve()) if (hermes_target / "SKILL.md").is_file() else None
     expected = {"mlx": "0.32.0", "mlx_audio": "0.4.7"}
     valid = platform.system() == "Darwin" and platform.machine() == "arm64"
     valid = valid and all(components[key] == value for key, value in expected.items())
-    return {"schema_version": 1, "installation_valid": valid, "components": components, "state": state}
+    valid = valid and bool(components["mlx_whisper"] and components["ffmpeg"] and components["ffprobe"])
+    valid = valid and bool(components["model_cache"] and components["state_file"] and components["hermes_skill"])
+    missing = [key for key in ("mlx", "mlx_audio", "mlx_whisper", "ffmpeg", "ffprobe", "model_cache", "state_file", "hermes_skill") if not components[key]]
+    return {"schema_version": 1, "installation_valid": valid, "missing": missing, "components": components, "state": state}
 
 
 def synthesize(profile_dir: Path, text: str, output: Path, manifest: Path | None = None) -> dict:

@@ -15,6 +15,7 @@
 
 - `0.1.0-dev`: desenvolvimento interno;
 - `0.1.0rc1`: implementação completa para homologação;
+- `0.1.0rc2`: correções da primeira validação externa;
 - `0.1.0`: Mac Apple Silicon homologado ponta a ponta;
 - `0.x`: API instável;
 - `1.0.0`: somente após compatibilidade e operação estáveis.

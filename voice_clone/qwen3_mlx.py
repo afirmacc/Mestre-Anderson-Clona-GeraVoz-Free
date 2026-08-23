@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
-from .common import VoiceCloneError
+from .common import MODEL_CACHE, VoiceCloneError
 
 
 def synthesize(profile: dict, profile_dir: Path, text: str, output: Path,
@@ -10,6 +11,7 @@ def synthesize(profile: dict, profile_dir: Path, text: str, output: Path,
                repetition_penalty: float = 1.10) -> dict:
     if not text.strip():
         raise VoiceCloneError("O texto de síntese não pode estar vazio.")
+    os.environ.setdefault("HF_HOME", str(MODEL_CACHE))
     try:
         import numpy as np
         from mlx_audio.audio_io import sf_write

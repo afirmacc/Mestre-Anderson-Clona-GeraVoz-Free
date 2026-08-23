@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.1.0rc1"
+version = "0.1.0rc2"
 description = "Diagnóstico e operação auditável de clonagem local autorizada de voz."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Anderson Oliveira" }]
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
@@ -20,6 +21,11 @@ voice-clone = "voice_clone.cli:main"
 
 [tool.setuptools]
 packages = ["voice_clone"]
+
+[tool.setuptools.data-files]
+"share/ia-skill-clonagem-voz" = ["SKILL.md", "installers/install-macos.sh"]
+"share/ia-skill-clonagem-voz/schemas" = ["schemas/profile.schema.json", "schemas/manifest.schema.json"]
+"share/ia-skill-clonagem-voz/templates" = ["templates/consentimento.txt", "templates/voice-test-cases.json"]
 
 [project.optional-dependencies]
 mlx = [

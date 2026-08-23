@@ -17,6 +17,13 @@ python3 -m voice_clone.cli doctor
 
 O instalador pede autorização antes de instalar Homebrew, Python 3.12, FFmpeg, Git ou baixar aproximadamente 3 GB do modelo. Ele cria um ambiente isolado em `~/.local/share/voice-clone` e nunca altera o Python do macOS.
 
+Ao terminar, carrega o backend e o modelo como smoke test. Para também sintetizar com um perfil já autorizado:
+
+```bash
+./installers/install-macos.sh \
+  --smoke-profile="$HOME/.local/share/voice-clone/profiles/minha-voz"
+```
+
 Para automação previamente autorizada:
 
 ```bash
@@ -35,6 +42,19 @@ voice-clone repair
 ```
 
 Perfis ficam fora do repositório em `~/.local/share/voice-clone/profiles` e não são apagados pelo reparo.
+
+## Instalação pelo wheel
+
+O wheel inclui instalador, skill Hermes, schemas e templates. Depois de instalar o pacote oficial com o extra MLX, a CLI localiza o instalador dentro do ambiente:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install 'ia-skill-clonagem-voz[mlx]'
+voice-clone install
+```
+
+Enquanto a versão não estiver publicada no PyPI, use o wheel da release do GitHub. O clone continua sendo o caminho principal da release candidate.
 
 ## Criar perfil e gerar teste
 
