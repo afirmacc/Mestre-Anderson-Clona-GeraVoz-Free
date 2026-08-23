@@ -10,6 +10,12 @@ Obrigada por contribuir. O projeto está em pré-lançamento e prioriza seguran�
 4. descreva plataforma e hardware usados nos testes;
 5. leia `SECURITY.md` e `docs/PRIVACIDADE.md`.
 
+## Canais de contribuição
+
+- Para código, correções e documentação, prefira Issues e Pull Requests no GitHub.
+- Para dúvidas, ideias ou contato direto sobre contribuições, escreva para [bellete.afirma.cc@gmail.com](mailto:bellete.afirma.cc@gmail.com).
+- Não envie amostras de voz, dados biométricos, credenciais ou outros dados sensíveis por e-mail.
+
 ## Ambiente de desenvolvimento
 
 ```bash
