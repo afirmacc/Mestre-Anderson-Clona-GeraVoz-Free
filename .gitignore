@@ -1,0 +1,41 @@
+# Dados biométricos e perfis privados
+voice-profiles/
+profiles/
+private/
+*.wav
+*.mp3
+*.ogg
+*.flac
+consent.txt
+
+# Modelos, caches e ambientes
+models/
+model-cache/
+.cache/
+.venv/
+venv/
+runtime/
+__pycache__/
+*.py[cod]
+
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.token
+
+# Resultados locais
+reports/
+output/
+dist/
+build/
+*.egg-info/
+
+# Sistema e IDE
+.DS_Store
+.idea/
+.vscode/
+
