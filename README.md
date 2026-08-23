@@ -1,5 +1,10 @@
 # IA Skill — Clonagem de Voz Local
 
+![status](https://img.shields.io/badge/status-pr%C3%A9--alpha-orange)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Hermes](https://img.shields.io/badge/Hermes-Agent%20Skill-6f42c1)
+![local](https://img.shields.io/badge/processamento-local-success)
+
 Clonagem de voz local, auditável e orientada por consentimento para agentes de IA — sem depender do ElevenLabs e sem enviar a voz para serviços externos.
 
 > Criado a partir de colaboração e compartilhado para devolver conhecimento à comunidade.
@@ -9,6 +14,34 @@ Clonagem de voz local, auditável e orientada por consentimento para agentes de 
 > **Pré-lançamento / em desenvolvimento.**
 
 A arquitetura da skill e o plano de instalação estão definidos. A CLI, os instaladores e os adaptadores ainda estão em implementação e validação. Não considere esta versão pronta para produção até que a matriz de compatibilidade apresente sua plataforma como **testada**.
+
+### O que já funciona
+
+- CLI inicial com `voice-clone doctor` e `voice-clone status`;
+- diagnóstico sem alterações no equipamento;
+- detecção básica de plataforma, arquitetura, memória, disco e comandos;
+- testes automatizados da camada de diagnóstico;
+- CI inicial para macOS e Linux;
+- proteção contra versionamento acidental de vozes e perfis.
+
+### O que ainda não funciona
+
+- instalação automática das engines;
+- criação e preparação do perfil;
+- síntese pela CLI pública;
+- transcrição e QA automático;
+- suporte validado para produção.
+
+## Documentação
+
+- [Instalação e bootstrap](docs/INSTALACAO.md)
+- [Arquitetura](docs/ARQUITETURA.md)
+- [Compatibilidade](docs/COMPATIBILIDADE.md)
+- [Estratégia de testes](docs/TESTES.md)
+- [Privacidade e consentimento](docs/PRIVACIDADE.md)
+- [Plano operacional](docs/PLANO.md)
+- [Política de releases](docs/RELEASES.md)
+- [Roadmap](ROADMAP.md)
 
 ## Por que este projeto existe?
 
@@ -187,6 +220,8 @@ Contribuições serão bem-vindas em:
 - segurança, privacidade e prevenção de abuso.
 
 Antes de contribuir, não envie amostras reais de voz, modelos pesados, caches, credenciais ou dados pessoais.
+
+Leia [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código de Conduta](CODE_OF_CONDUCT.md) antes de abrir uma contribuição.
 
 ## Licença
 

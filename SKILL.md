@@ -1,6 +1,6 @@
 ---
 name: clonar-voz-local
-description: Diagnostica, instala e valida clonagem local autorizada de voz sem fallback silencioso.
+description: "Diagnostica, instala e valida clonagem local autorizada de voz sem fallback silencioso."
 version: 0.1.0-dev
 ---
 
@@ -29,4 +29,3 @@ Pré-lançamento. Use `voice-clone doctor` antes de qualquer instalação. Não 
 6. Gere relatórios técnicos e faça QA humano.
 
 Leia `docs/PLANO.md` para o contrato completo de instalação, atualização, testes e recuperação.
-
