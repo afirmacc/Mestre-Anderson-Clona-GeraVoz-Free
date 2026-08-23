@@ -26,7 +26,7 @@ class DoctorTests(unittest.TestCase):
             result = main(["doctor", "--json"])
         self.assertEqual(result, 0)
         payload = json.loads(stream.getvalue())
-        self.assertIn(payload["compatibility"], {"planejado", "experimental"})
+        self.assertIn(payload["compatibility"], {"release-candidate", "planejado", "experimental"})
 
 
 if __name__ == "__main__":

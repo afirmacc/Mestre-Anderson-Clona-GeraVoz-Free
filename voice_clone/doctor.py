@@ -23,6 +23,8 @@ class Diagnostic:
     recommended_backend: str
     compatibility: str
     missing: list[str]
+    ready_to_install: bool
+    blockers: list[str]
 
 
 def _memory_gb() -> float | None:
@@ -43,7 +45,7 @@ def diagnose() -> Diagnostic:
     skill_dir = Path(os.environ.get("HERMES_SKILLS_DIR", Path.home() / ".hermes/skills/local")) / "clonar-voz-local"
 
     if system == "Darwin" and architecture == "arm64":
-        backend, compatibility = "qwen3-mlx", "planejado"
+        backend, compatibility = "qwen3-mlx", "release-candidate"
     elif system == "Linux" and commands["nvidia-smi"]:
         backend, compatibility = "qwen3-cuda", "planejado"
     elif system == "Windows":
@@ -51,19 +53,30 @@ def diagnose() -> Diagnostic:
     else:
         backend, compatibility = "cpu", "experimental"
 
+    blockers: list[str] = []
+    if system != "Darwin" or architecture != "arm64":
+        blockers.append("A versão homologável atual exige macOS Apple Silicon.")
+    memory = _memory_gb()
+    if memory is not None and memory < 16:
+        blockers.append("Recomendam-se pelo menos 16 GB de memória unificada.")
+    disk = round(shutil.disk_usage(Path.home()).free / (1024**3), 2)
+    if disk < 12:
+        blockers.append("São necessários pelo menos 12 GB livres para ambiente, modelo e testes.")
     return Diagnostic(
         system=system,
         release=platform.release(),
         architecture=architecture,
         python=platform.python_version(),
-        memory_gb=_memory_gb(),
-        disk_free_gb=round(shutil.disk_usage(Path.home()).free / (1024**3), 2),
+        memory_gb=memory,
+        disk_free_gb=disk,
         commands=commands,
         hermes_skill_dir=str(skill_dir),
         skill_installed=(skill_dir / "SKILL.md").is_file(),
         recommended_backend=backend,
         compatibility=compatibility,
         missing=missing,
+        ready_to_install=not blockers,
+        blockers=blockers,
     )
 
 
@@ -77,9 +90,11 @@ def render_text(result: Diagnostic) -> str:
         f"Backend recomendado: {result.recommended_backend} ({result.compatibility})",
     ]
     lines.append("Ausências: " + (", ".join(result.missing) if result.missing else "nenhuma dependência básica"))
+    lines.append("Pronto para instalar: " + ("sim" if result.ready_to_install else "não"))
+    if result.blockers:
+        lines.append("Bloqueios: " + " | ".join(result.blockers))
     return "\n".join(lines)
 
 
 def render_json(result: Diagnostic) -> str:
     return json.dumps(asdict(result), ensure_ascii=False, indent=2)
-

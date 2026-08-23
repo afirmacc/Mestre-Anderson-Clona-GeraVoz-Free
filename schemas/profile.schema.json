@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://afirmacc.github.io/ia-skill-clonagem-voz/profile.schema.json",
+  "title": "Voice profile",
+  "type": "object",
+  "required": ["schema_version", "profile_id", "engine", "model", "reference", "reference_sha256", "consent_file", "consent_sha256", "status"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "profile_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"},
+    "engine": {"const": "qwen3-mlx"},
+    "status": {"enum": ["AGUARDA_TESTE", "AGUARDA_QA_HUMANO", "PRONTO", "BLOQUEADO_VOZ"]}
+  },
+  "additionalProperties": true
+}

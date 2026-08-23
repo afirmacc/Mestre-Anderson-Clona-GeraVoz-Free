@@ -1,0 +1,9 @@
+Titular da voz:
+Responsável pelo tratamento:
+Finalidade autorizada:
+Ambientes/máquinas autorizados:
+Prazo ou condição de revogação:
+Data:
+Confirmação expressa do titular:
+
+Este registro acompanha o perfil privado e não deve ser publicado no Git.

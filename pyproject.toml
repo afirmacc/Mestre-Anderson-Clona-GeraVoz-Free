@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.1.0.dev0"
+version = "0.1.0rc1"
 description = "Diagnóstico e operação auditável de clonagem local autorizada de voz."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Anderson Oliveira" }]
+license = { file = "LICENSE" }
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
 ]
 
@@ -20,6 +21,14 @@ voice-clone = "voice_clone.cli:main"
 [tool.setuptools]
 packages = ["voice_clone"]
 
+[project.optional-dependencies]
+mlx = [
+  "mlx==0.32.0",
+  "mlx-audio==0.4.7",
+  "numpy>=1.26,<3",
+  "mlx-whisper>=0.4,<1",
+]
+test = ["pytest>=8,<9"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

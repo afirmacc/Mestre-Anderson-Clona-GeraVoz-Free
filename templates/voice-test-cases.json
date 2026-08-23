@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "curta", "text": "Esta é uma verificação local de voz autorizada."},
+    {"id": "numeros", "text": "Hoje é vinte e três de agosto de dois mil e vinte e seis; o valor é cento e vinte e três reais e quarenta e cinco centavos."},
+    {"id": "siglas", "text": "A inteligência artificial e a experiência do usuário devem trabalhar juntas."},
+    {"id": "expressividade", "text": "Você percebeu a diferença? Excelente! Vamos continuar com clareza e responsabilidade."}
+  ]
+}
