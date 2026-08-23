@@ -1,6 +1,6 @@
 # IA Skill — Clonagem de Voz Local
 
-![status](https://img.shields.io/badge/status-pr%C3%A9--alpha-orange)
+![status](https://img.shields.io/badge/status-release%20candidate-yellow)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Hermes](https://img.shields.io/badge/Hermes-Agent%20Skill-6f42c1)
 ![local](https://img.shields.io/badge/processamento-local-success)
@@ -11,26 +11,26 @@ Clonagem de voz local, auditável e orientada por consentimento para agentes de 
 
 ## Estado do projeto
 
-> **Pré-lançamento / em desenvolvimento.**
+> **Release candidate para macOS Apple Silicon.**
 
-A arquitetura da skill e o plano de instalação estão definidos. A CLI, os instaladores e os adaptadores ainda estão em implementação e validação. Não considere esta versão pronta para produção até que a matriz de compatibilidade apresente sua plataforma como **testada**.
+A implementação do caminho Qwen3-TTS/MLX está disponível para homologação. Ainda não considere esta versão estável até concluir uma instalação limpa, uma segunda execução idempotente e o QA humano da voz no equipamento de destino.
 
 ### O que já funciona
 
-- CLI inicial com `voice-clone doctor` e `voice-clone status`;
-- diagnóstico sem alterações no equipamento;
-- detecção básica de plataforma, arquitetura, memória, disco e comandos;
-- testes automatizados da camada de diagnóstico;
-- CI inicial para macOS e Linux;
-- proteção contra versionamento acidental de vozes e perfis.
+- CLI com diagnóstico, instalação, reparo, perfis, síntese, verificação e testes;
+- instalador idempotente para macOS Apple Silicon;
+- adaptador Qwen3-TTS/MLX sem fallback;
+- preparação da amostra por FFmpeg e validação por hashes;
+- manifestos, relatórios, transcrição local e comparação textual;
+- testes automatizados e proteção contra vozes ou perfis no Git.
 
-### O que ainda não funciona
+### O que ainda precisa de homologação
 
-- instalação automática das engines;
-- criação e preparação do perfil;
-- síntese pela CLI pública;
-- transcrição e QA automático;
-- suporte validado para produção.
+- instalação limpa em uma segunda máquina Hermes;
+- repetição da instalação sem novo download;
+- bateria completa com uma voz de teste consentida;
+- aprovação humana de semelhança, naturalidade e estabilidade;
+- Linux/NVIDIA e Windows/WSL2.
 
 ## Documentação
 
@@ -78,7 +78,7 @@ avaliação humana
 relatório auditável
 ```
 
-Comandos planejados:
+Comandos disponíveis:
 
 ```bash
 voice-clone doctor
@@ -90,15 +90,13 @@ voice-clone synthesize
 voice-clone verify
 voice-clone test
 voice-clone repair
-voice-clone update --check
-voice-clone uninstall
 ```
 
 ## Compatibilidade planejada
 
 | Plataforma | Backend | Estado |
 |---|---|---|
-| macOS Apple Silicon | Qwen3-TTS + MLX | Em implementação |
+| macOS Apple Silicon | Qwen3-TTS + MLX | Release candidate |
 | Linux + NVIDIA | Qwen3/PyTorch ou Chatterbox + CUDA | Planejado |
 | Windows + WSL2 + NVIDIA | Backend Linux/CUDA | Planejado |
 | CPU sem GPU compatível | Dependente da engine, desempenho reduzido | Experimental |
@@ -120,7 +118,13 @@ Após a instalação, abra uma nova sessão ou use `/reset` e confirme:
 hermes skills list
 ```
 
-> Os comandos automáticos de bootstrap serão documentados quando a primeira versão executável for validada. Por enquanto, não execute instruções de instalação copiadas de forks ou fontes não verificadas.
+Instale a partir de um clone verificado deste repositório:
+
+```bash
+./installers/install-macos.sh
+```
+
+O script pede confirmação antes de instalar ferramentas de sistema ou baixar o modelo. Uma segunda execução revalida e reutiliza os componentes corretos.
 
 ## Instalação inteligente
 
@@ -225,7 +229,7 @@ Leia [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código de Conduta](CODE_OF_CONDUCT
 
 ## Licença
 
-A licença aberta ainda será definida antes do primeiro lançamento público. Até essa decisão, o conteúdo permanece em desenvolvimento e não deve ser redistribuído como uma versão estável.
+Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE). A licença do código não concede direito de usar a voz de terceiros nem substitui consentimento.
 
 ## Créditos
 

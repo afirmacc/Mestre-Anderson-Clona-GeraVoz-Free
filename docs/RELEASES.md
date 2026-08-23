@@ -1,6 +1,6 @@
 # Política de releases
 
-## Condições mínimas para pré-alpha
+## Condições mínimas para versão estável no Mac
 
 - instalador macOS idempotente;
 - adaptador MLX funcional;
@@ -14,9 +14,9 @@
 ## Versões
 
 - `0.1.0-dev`: desenvolvimento interno;
-- `0.1.0-alpha.1`: primeiro teste compartilhável;
+- `0.1.0rc1`: implementação completa para homologação;
+- `0.1.0`: Mac Apple Silicon homologado ponta a ponta;
 - `0.x`: API instável;
 - `1.0.0`: somente após compatibilidade e operação estáveis.
 
 Cada release deve conter changelog, matriz de compatibilidade, hashes dos artefatos e limitações conhecidas.
-

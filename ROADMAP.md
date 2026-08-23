@@ -6,27 +6,27 @@
 - [x] README e política de segurança;
 - [x] diagnóstico inicial;
 - [x] testes unitários e CI;
-- [ ] definir licença aberta.
+- [x] definir licença aberta.
 
 ## Fase 1 — macOS Apple Silicon
 
-- [ ] diagnóstico completo de Command Line Tools, Homebrew, Python e FFmpeg;
-- [ ] instalador idempotente;
-- [ ] ambiente virtual e lockfile;
-- [ ] adaptador Qwen3-TTS/MLX;
-- [ ] download retomável e validação do modelo;
-- [ ] preparação de perfil autorizado;
-- [ ] síntese e manifesto;
-- [ ] testes de segunda execução, reparo e retorno;
+- [x] diagnóstico de plataforma, memória, disco, Python e FFmpeg;
+- [x] instalador idempotente;
+- [x] ambiente virtual e dependências fixadas;
+- [x] adaptador Qwen3-TTS/MLX;
+- [x] cache reutilizável do modelo;
+- [x] preparação de perfil autorizado;
+- [x] síntese e manifesto;
+- [x] testes unitários de reutilização lógica, integridade e bloqueio de fallback;
 - [ ] validação em Hermes limpo.
 
 ## Fase 2 — Qualidade
 
-- [ ] transcrição e comparação textual;
-- [ ] bateria de pronúncia e deriva;
-- [ ] relatórios JSON com schemas;
+- [x] transcrição e comparação textual;
+- [x] bateria inicial de pronúncia e expressividade;
+- [x] relatórios JSON com schemas;
 - [ ] QA humano estruturado;
-- [ ] release pré-alpha para testes do grupo.
+- [ ] release candidate para testes do grupo.
 
 ## Fase 3 — Outras plataformas
 
@@ -34,4 +34,3 @@
 - [ ] Windows via WSL2;
 - [ ] backend Chatterbox separado;
 - [ ] matriz pública de compatibilidade.
-

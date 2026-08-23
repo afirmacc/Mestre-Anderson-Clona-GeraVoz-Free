@@ -1,35 +1,69 @@
-# Instalação
+# Instalação no macOS Apple Silicon
 
-## Situação atual
+## Requisitos
 
-O instalador automático ainda não está liberado. O script macOS existente executa somente diagnóstico e não altera o equipamento.
+- Mac Apple Silicon com macOS;
+- 16 GB de memória unificada recomendados;
+- 12 GB livres;
+- internet para dependências e modelo;
+- voz própria ou autorizada por escrito.
 
-## Instalação de desenvolvimento
+## Diagnóstico e instalação
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
-voice-clone doctor
+python3 -m voice_clone.cli doctor
+./installers/install-macos.sh
 ```
 
-## Instalação no Hermes
+O instalador pede autorização antes de instalar Homebrew, Python 3.12, FFmpeg, Git ou baixar aproximadamente 3 GB do modelo. Ele cria um ambiente isolado em `~/.local/share/voice-clone` e nunca altera o Python do macOS.
 
-Quando o pacote operacional estiver validado, a pasta da skill será copiada para:
+Para automação previamente autorizada:
 
-```text
-~/.hermes/skills/local/clonar-voz-local/
+```bash
+./installers/install-macos.sh --yes
 ```
 
-Depois, reinicie a sessão ou use `/reset` e confirme com `hermes skills list`.
+Use `--skip-model` somente para validar o bootstrap sem baixar o modelo.
 
-## Idempotência
+## Idempotência e reparo
 
-O instalador futuro deverá inventariar antes de agir. Componentes válidos serão reutilizados; itens ausentes serão instalados; itens quebrados serão reparados seletivamente. Perfis serão preservados.
+Execute o instalador novamente para revalidar. Ferramentas, ambiente, bibliotecas e cache válidos são reutilizados. Para correção seletiva:
 
-## Mac sem dependências
+```bash
+voice-clone status
+voice-clone repair
+```
 
-O bootstrap deverá validar, nesta ordem: Apple Silicon, Command Line Tools, Homebrew, Python 3.12, FFmpeg, Git, ambiente virtual, MLX, MLX-Audio, modelo e Hermes.
+Perfis ficam fora do repositório em `~/.local/share/voice-clone/profiles` e não são apagados pelo reparo.
 
-Nenhum gerenciador ou pacote de sistema será instalado silenciosamente.
+## Criar perfil e gerar teste
 
+```bash
+voice-clone prepare \
+  --input /caminho/amostra.m4a \
+  --profile-id minha-voz \
+  --consent /caminho/consentimento.txt \
+  --transcript "Transcrição exata da amostra"
+
+voice-clone profile validate \
+  --profile ~/.local/share/voice-clone/profiles/minha-voz
+
+voice-clone synthesize \
+  --profile ~/.local/share/voice-clone/profiles/minha-voz \
+  --text "Esta é uma geração local autorizada." \
+  --output teste.wav
+
+voice-clone verify \
+  --audio teste.wav \
+  --text "Esta é uma geração local autorizada." \
+  --manifest teste.manifest.json
+
+voice-clone test \
+  --profile ~/.local/share/voice-clone/profiles/minha-voz
+```
+
+O estado máximo automático é `AGUARDA_QA_HUMANO`. Só uma pessoa autorizada pode aprovar timbre, naturalidade, ritmo e pronúncia.
+
+## Hermes
+
+Copie ou vincule a pasta do projeto para `~/.hermes/skills/local/clonar-voz-local`, abra uma nova sessão ou use `/reset`, e confira com `hermes skills list`. O executor funciona independentemente do carregamento da skill pelo Hermes.
