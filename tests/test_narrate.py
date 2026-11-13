@@ -39,7 +39,8 @@ class NarrateTests(unittest.TestCase):
             report = narrate(root, script, root / "saida", only=[2])
             self.assertEqual(len(report["lines"]), 1)
             self.assertEqual(report["lines"][0]["text"], "App")
-            self.assertEqual(synth.call_args.args[1], "Ápi")
+            self.assertEqual(synth.call_args.args[1], "App")
+            self.assertEqual(synth.call_args.kwargs["speak"], "Ápi")
 
     def test_empty_script_is_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

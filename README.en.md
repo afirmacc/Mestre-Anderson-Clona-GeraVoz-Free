@@ -2,7 +2,7 @@
 
 [Português](README.md) · **English** · [Español](README.es.md)
 
-![version](https://img.shields.io/badge/version-0.2.0-blue)
+![version](https://img.shields.io/badge/version-0.3.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/processing-100%25%20local-success)
@@ -30,35 +30,39 @@ cd ia-skill-clonagem-voz
 
 The installer is idempotent: it asks before installing tools or downloading the model (Qwen3-TTS 1.7B, 8-bit, ~2 GB) and only re-validates on a second run.
 
-## Use in 4 steps
+## Use in 5 steps
 
 ```bash
-# 1. Profile: 15–40 s of natural, clean, single-speaker speech, with signed consent
-voice-clone prepare --input my-voice.m4a --profile-id my-voice \
-  --consent consent.txt --language English
+# 1. Capture: see the reading text (covers the sounds of the language) and tips, record and check
+voice-clone record --guide --language English
+voice-clone record --output my-voice.wav --language English   # or record on your phone
+voice-clone record --analyze my-voice.wav                      # length, noise, clipping: says what to fix
 
-# 2. One line (up to 10 takes; keeps the one closest to your pitch and timbre)
-voice-clone synthesize --profile ~/.local/share/voice-clone/profiles/my-voice \
-  --text "Hi! This is my voice." --output hi.wav
+# 2. Profile (with signed consent)
+voice-clone prepare --input my-voice.wav --profile-id my-voice --consent consent.txt --language English
+P=~/.local/share/voice-clone/profiles/my-voice
 
-# 3. A whole script (one line per row), with even loudness across lines
-voice-clone narrate --profile ~/.local/share/voice-clone/profiles/my-voice \
-  --script script.txt --output-dir narration/
+# 3. Pronunciation: find the hard words in the script and learn how YOUR voice should say them
+voice-clone pronounce --profile $P --script script.txt
+voice-clone pronounce --profile $P --script script.txt --learn-script --output-dir learn/
 
-# 4. Listen to the lines listed in "to_review" (narration/narration-report.json) and redo only those
-voice-clone narrate ... --only 3 7
+# 4. Narration: listens to every take and keeps the one with your pitch and the right words
+voice-clone narrate --profile $P --script script.txt --output-dir narration/
+
+# 5. Listen to the "to_review" lines (narration/narration-report.json) and redo only those
+voice-clone narrate --profile $P --script script.txt --output-dir narration/ --only 3 7
 ```
 
-## What 0.2.0 brings (production lessons)
+## Saying it right: how the skill handles pronunciation
 
-| Real problem | What the skill does |
-|---|---|
-| One line came out in **a different voice**, 8 semitones higher | **Fidelity filter:** measures pitch (F0) and timbre of every take against your sample; accepts up to 1.2 semitones and timbre 4.3; tries up to 10 times and keeps the best |
-| With the reference transcript, the model **cut** lines or **babbled** for 30 s | Does not send the transcript by default |
-| Truncated or repeating takes | Discards durations outside 6–16 characters per second |
-| **Loudness jumping** between lines | Trims edge silence and levels every line to −20 dB mean |
-| Brand words **mispronounced** | **Pronunciation dictionary** applied only to the spoken text; subtitles keep the correct spelling |
-| Long paragraphs made the voice **drift** | Scripts in short lines (up to ~42 characters) |
+1. **Base dictionary per language** (pt, en, es) with the words the model gets wrong most. Your profile dictionary wins.
+2. **Automatic rules:** money (`$19.99` → "nineteen dollars and ninety-nine cents"), `25%`, numbers, acronyms, websites (`afirma.cc` → "afirma dot see see") and e-mails.
+3. **Find hard words** in the script before recording (`pronounce --script`).
+4. **Learn in your voice** (`pronounce --learn word` or `--learn-script`): the skill says the word in a few spellings, listens with Whisper and saves the one that was understood.
+5. **Every take is listened to** during narration: a swapped or swallowed word makes the skill try another take; if none comes out clean, the line goes to `to_review` with the suspect words.
+6. **Preview:** `pronounce --text "..."` shows exactly what will be spoken. Manual fix: `pronounce --add "GUI=gooey"`.
+
+Subtitles always keep the correct spelling.
 
 ## Writing a good script
 

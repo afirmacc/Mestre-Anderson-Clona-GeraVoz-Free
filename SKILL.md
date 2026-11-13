@@ -1,7 +1,7 @@
 ---
 name: clonar-voz-local
-description: "Clona uma voz autorizada no próprio computador (Qwen3-TTS + MLX, Apple Silicon) e narra roteiros com a voz clonada: filtro de fidelidade de tom e timbre, dicionário de pronúncia, volume igual entre falas, sem fallback e com consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês, espanhol e outros idiomas. Local voice cloning and script narration with your own consented voice."
-version: 0.2.0
+description: "Clona uma voz autorizada no próprio computador (Qwen3-TTS + MLX, Apple Silicon) e narra roteiros com ela, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
+version: 0.3.0
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
@@ -13,45 +13,61 @@ Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma
 ## Regras obrigatórias
 
 - Só a própria voz ou uma voz **autorizada por escrito** (`templates/consentimento.txt`, `consent.en.txt`, `consentimiento.es.txt`). Sem consentimento: `BLOQUEADO_VOZ`.
-- Amostras, perfis e áudios gerados ficam **fora do repositório** (o `.gitignore` já bloqueia `*.wav`, `voice-profiles/`, `consent.txt`).
+- Amostras, perfis e áudios gerados ficam **fora do repositório**.
 - Nunca usar fallback nem trocar a engine em silêncio. Se falhar, parar e dizer.
-- A automação mede integridade e fidelidade; **a aprovação da voz é humana**.
+- A automação mede voz e pronúncia; **a aprovação final é humana**.
 - Áudio sintético não pode ser usado para enganar (fraude, se passar por alguém, burlar autenticação por voz).
 
-## Fluxo
+## Fluxo completo
 
-1. `voice-clone doctor --json` → confira macOS Apple Silicon, memória, disco, FFmpeg. Se já estiver instalado, `voice-clone status`; não reinstale.
-2. `voice-clone install` (idempotente; pede confirmação antes de baixar o modelo).
-3. Perfil: 15 a 40 s de fala natural, limpa, um falante só (menos de 8 s é recusado).
-   `voice-clone prepare --input amostra.m4a --profile-id minha-voz --consent consentimento.txt --language Portuguese`
-4. Pronúncia: edite `pronunciation.json` na pasta do perfil (padrão `~/.local/share/voice-clone/profiles/<perfil>/`) (exemplo em `templates/pronunciation.example.json`). A chave é a grafia certa (legenda), o valor é como falar: `"Admin": "Adimin"`, `"app": "ápi"`.
-5. Uma fala: `voice-clone synthesize --profile ~/.local/share/voice-clone/profiles/minha-voz --text "..." --output fala.wav` (padrão: até 10 tomadas, grava a mais fiel).
-6. Roteiro inteiro: `voice-clone narrate --profile ~/.local/share/voice-clone/profiles/minha-voz --script roteiro.txt --output-dir narracao/` → `line-NN.leveled.wav` + `narration-report.json`. Regravar só algumas: `--only 3 7`.
-7. Ouça as falas em `to_review` (status `CONFERIR_FIDELIDADE`) e peça a aprovação humana antes de publicar.
+Perfil padrão: `~/.local/share/voice-clone/profiles/<perfil>` (abaixo, `$P`).
 
-## Como escrever o roteiro (o que mais muda o resultado)
+1. **Equipamento:** `voice-clone doctor --json`. Já instalado? `voice-clone status`; não reinstale. Senão `voice-clone install`.
+2. **Captação (o que mais pesa):** `voice-clone record --guide --language Portuguese` mostra o texto de leitura (cobre os sons do idioma) e as dicas. Grave com `voice-clone record --output minha-voz.wav` ou no celular, e confira com `voice-clone record --analyze minha-voz.wav` (duração, ruído, estouro). Amostra ruim é recusada com a explicação de como regravar.
+3. **Perfil:** `voice-clone prepare --input minha-voz.wav --profile-id minha-voz --consent consentimento.txt --language Portuguese`.
+4. **Pronúncia antes de gravar:**
+   - `voice-clone pronounce --profile $P --script roteiro.txt` → lista as palavras difíceis (estrangeirismo, sigla, marca) que ainda não estão no dicionário.
+   - `voice-clone pronounce --profile $P --script roteiro.txt --learn-script --output-dir aprender/` → fala cada uma na sua voz em algumas grafias, escuta e guarda no dicionário a que foi entendida.
+   - `voice-clone pronounce --profile $P --text "..."` → mostra exatamente como o texto será falado.
+   - `voice-clone pronounce --profile $P --add "Admin=Adimin"` → correção manual.
+5. **Narrar:** `voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/` → `line-NN.leveled.wav` + `narration-report.json`.
+6. **Conferir:** ouça as falas em `to_review` (`CONFERIR_FIDELIDADE` = voz fora do tom; `CONFERIR_PRONUNCIA` = palavra suspeita, listada em `words.suspects`). Corrija o dicionário e regrave só elas: `--only 3 7`. Peça a aprovação humana antes de publicar.
 
-- **Falas curtas:** uma ideia por fala, até ~42 caracteres (umas 7 palavras). Parágrafo longo faz o modelo derivar a voz ou balbuciar.
-- Uma fala por linha no `.txt`. No `.json`, `text` é a legenda e `speak` (opcional) é como falar: `{"text": "Acesse afirma.cc", "speak": "Acesse afirma ponto cê cê."}`.
-- Siglas, nomes estrangeiros e endereços: escreva como se fala (no dicionário ou no `speak`).
-- Números e datas por extenso quando a leitura for ambígua.
+## Como o texto vira fala
+
+1. Dicionário: base do idioma (`voice_clone/dicionarios/pt.json`, `en.json`, `es.json`, com app, Admin, WhatsApp, YouTube, Wi-Fi…) < dicionário do perfil < `--pronunciation` extra. Chave = grafia certa; valor = como falar.
+2. Regras automáticas: `R$ 19,90` → "dezenove reais e noventa centavos"; `30%` → "trinta por cento"; `10h30` → "dez horas e trinta"; `7x` → "sete vezes"; `2026` → "dois mil e vinte e seis"; `CPF` → "cê pê éfe"; `afirma.cc` → "afirma ponto cê cê"; e-mail com "arroba".
+3. No roteiro `.json`, `speak` substitui tudo isso naquela fala: `{"text": "Acesse afirma.cc", "speak": "Acesse afirma ponto cê cê."}`.
+
+A legenda sempre usa o `text` (grafia certa).
+
+## Escuta automática (cada tomada)
+
+Com o `mlx-whisper` instalado, cada tomada com tom certo é transcrita e comparada com o texto. Palavra trocada, engolida ou ouvida com baixa confiança vira suspeita; a skill tenta outra tomada e, se nenhuma sair limpa, marca `CONFERIR_PRONUNCIA`. Desligar: `--no-check-words`. O Whisper às vezes "corrige" o que ouve, por isso o ouvido humano continua obrigatório.
+
+## Como escrever o roteiro
+
+- **Falas curtas:** uma ideia por fala, até ~42 caracteres. Parágrafo longo faz o modelo derivar a voz ou balbuciar.
+- Uma fala por linha no `.txt`.
+- Rode o `pronounce --script` antes de narrar.
 
 ## Lições da produção (por que o padrão é assim)
 
 | Problema que aconteceu | O que a skill faz |
 |---|---|
-| Com a transcrição da referência, o modelo cortava a fala (0,2 s) ou balbuciava 30 s | Não envia `ref_text` por padrão (`use_reference_transcript: false`) |
-| Uma fala saiu com outra voz, 8 semitons acima | Mede tom (F0) e timbre de cada tomada; aceita até 1,2 semitom e timbre 4,3; até 10 tomadas |
+| Com a transcrição da referência, o modelo cortava a fala (0,2 s) ou balbuciava 30 s | Não envia `ref_text` por padrão |
+| Uma fala saiu com outra voz, 8 semitons acima | Mede o tom de cada tomada (até 1,2 semitom) e o timbre (só mudança grosseira, até 6,0); até 10 tomadas |
 | Tomadas cortadas ou repetidas | Descarta duração fora de 6–16 caracteres por segundo |
-| Volume pulando entre falas | Corta silêncio das pontas e iguala a −20 dB de média, com limitador |
-| "Admin" e "app" lidos errado | Dicionário de pronúncia só no texto falado; legenda fica com a grafia certa |
+| Volume pulando entre falas | Iguala cada fala a −20 dB de média, com limitador |
+| "Admin" e "app" lidos errado | Dicionário base + do perfil, escuta automática e aprendizado (`--learn`) |
+| Amostra com ruído ou curta deixava o clone instável | Texto de leitura por idioma e análise da amostra no `prepare` |
 
 ## Onde rodar
 
-A geração usa a GPU (Metal). Rode `synthesize`/`narrate` num **terminal comum do Mac**; em sandbox de agente o MLX pode não enxergar a GPU. Se travar, pare e informe; não troque de engine.
+A geração usa a GPU (Metal). Rode `narrate`, `synthesize` e `pronounce --learn` num **terminal comum do Mac**; em sandbox de agente o MLX pode não enxergar a GPU. Se travar, pare e informe; não troque de engine.
 
 ## Idiomas
 
-Qwen3-TTS fala português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e russo. Defina no perfil (`--language`) ou por fala (`--language English`). Documentação: `README.md` (pt-BR), `README.en.md`, `README.es.md`.
+Português, inglês e espanhol têm texto de leitura, dicionário base, números por extenso e documentação (`README.md`, `README.en.md`, `README.es.md`). O Qwen3-TTS também fala francês, alemão, italiano, japonês, coreano, chinês e russo (sem dicionário base ainda).
 
 Contrato completo de instalação, testes e recuperação: `docs/PLANO.md`.

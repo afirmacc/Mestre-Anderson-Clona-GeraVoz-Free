@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "language": "en",
+  "comment": "Base dictionary: words the model tends to misread in English. Key = correct spelling; value = how to say it. Your profile dictionary wins over this one.",
+  "entries": {
+    "iOS": "eye oh ess",
+    "macOS": "mac oh ess",
+    "GUI": "gooey",
+    "JPEG": "jay peg",
+    "SQL": "sequel",
+    "NASA": "nassa",
+    "OK": "okay",
+    "AI": "ay eye",
+    "ChatGPT": "chat gee pee tee",
+    "Wi-Fi": "why fye",
+    "e-mail": "email"
+  }
+}

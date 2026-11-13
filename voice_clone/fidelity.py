@@ -12,9 +12,11 @@ from pathlib import Path
 
 from .common import VoiceCloneError
 
-# Limites que funcionaram na produção (voz masculina, português):
+# Limites da produção (voz masculina, português). O tom é o sinal decisivo: a troca de voz real
+# saiu 8 semitons acima, com timbre ~10. O timbre varia com o conteúdo da frase (muito "s" mede
+# mais longe), então o limite dele só pega mudança grosseira; 4,3 barrava tomadas boas.
 DEFAULT_MAX_SEMITONES = 1.2   # distância máxima do tom mediano da referência
-DEFAULT_MAX_TIMBRE = 4.3      # distância máxima do espectro médio em 24 faixas
+DEFAULT_MAX_TIMBRE = 6.0      # distância máxima do espectro médio em 24 faixas
 
 
 def read_wav(path: Path):

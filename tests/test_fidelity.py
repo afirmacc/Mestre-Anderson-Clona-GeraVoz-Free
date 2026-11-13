@@ -67,9 +67,10 @@ class BestTakeTests(unittest.TestCase):
         (root / "profile.json").write_text(json.dumps(data))
         (root / "pronunciation.json").write_text(json.dumps({"entries": {"Admin": "Adimin"}}))
 
+    @patch("voice_clone.operations.listen.available", return_value=False)
     @patch("voice_clone.operations.probe")
     @patch("voice_clone.operations.generate_take")
-    def test_keeps_the_most_faithful_take(self, generate, audio_probe) -> None:
+    def test_keeps_the_most_faithful_take(self, generate, audio_probe, _listen) -> None:
         # 1ª tomada: outra voz (199 Hz). 2ª: cortada. 3ª: a voz certa.
         generate.side_effect = [(tone(199), RATE), (tone(124, 0.2), RATE), (tone(125), RATE), (tone(124), RATE)]
         audio_probe.return_value = {"valid": True, "duration_seconds": 1.5, "sample_rate": RATE, "channels": 1}
@@ -78,16 +79,17 @@ class BestTakeTests(unittest.TestCase):
             root = Path(temp)
             self.make_profile(root)
             result = synthesize(root, "Abra o app Admin.", root / "out.wav", takes=10)
-            self.assertEqual(result["spoken_text"], "Abra o app Adimin.")
+            self.assertEqual(result["spoken_text"], "Abra o ápi Adimin.")
             self.assertEqual(result["generation"]["chosen_take"], 3)
             self.assertEqual(result["generation"]["takes_tried"], 3)
             self.assertEqual(result["generation"]["attempts"][1]["discarded"], "duration")
             self.assertEqual(result["status"], "AGUARDA_QA_HUMANO")
             self.assertAlmostEqual(fidelity.measure(root / "out.wav")["f0_hz"], 125, delta=4)
 
+    @patch("voice_clone.operations.listen.available", return_value=False)
     @patch("voice_clone.operations.probe")
     @patch("voice_clone.operations.generate_take")
-    def test_flags_when_no_take_is_faithful(self, generate, audio_probe) -> None:
+    def test_flags_when_no_take_is_faithful(self, generate, audio_probe, _listen) -> None:
         generate.side_effect = [(tone(199), RATE), (tone(180), RATE)]
         audio_probe.return_value = {"valid": True}
         from voice_clone.operations import synthesize

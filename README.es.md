@@ -2,7 +2,7 @@
 
 [Português](README.md) · [English](README.en.md) · **Español**
 
-![versión](https://img.shields.io/badge/versi%C3%B3n-0.2.0-blue)
+![versión](https://img.shields.io/badge/versi%C3%B3n-0.3.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/procesamiento-100%25%20local-success)
@@ -30,35 +30,39 @@ cd ia-skill-clonagem-voz
 
 El instalador es idempotente: pregunta antes de instalar herramientas o descargar el modelo (Qwen3-TTS 1.7B, 8 bits, ~2 GB) y en la segunda ejecución solo vuelve a validar.
 
-## Uso en 4 pasos
+## Uso en 5 pasos
 
 ```bash
-# 1. Perfil: 15 a 40 s de habla natural, limpia, de un solo hablante, con consentimiento firmado
-voice-clone prepare --input mi-voz.m4a --profile-id mi-voz \
-  --consent consentimiento.txt --language Spanish
+# 1. Captación: mira el texto de lectura (cubre los sonidos del idioma) y los consejos, graba y revisa
+voice-clone record --guide --language Spanish
+voice-clone record --output mi-voz.wav --language Spanish   # o graba con el celular
+voice-clone record --analyze mi-voz.wav                      # duración, ruido, saturación: dice qué corregir
 
-# 2. Una frase (hasta 10 tomas; guarda la más fiel a tu tono y timbre)
-voice-clone synthesize --profile ~/.local/share/voice-clone/profiles/mi-voz \
-  --text "¡Hola! Esta es mi voz." --output hola.wav
+# 2. Perfil (con consentimiento firmado)
+voice-clone prepare --input mi-voz.wav --profile-id mi-voz --consent consentimiento.txt --language Spanish
+P=~/.local/share/voice-clone/profiles/mi-voz
 
-# 3. Un guion completo (una frase por línea), con el mismo volumen en todas
-voice-clone narrate --profile ~/.local/share/voice-clone/profiles/mi-voz \
-  --script guion.txt --output-dir narracion/
+# 3. Pronunciación: encuentra las palabras difíciles del guion y aprende cómo TU voz debe decirlas
+voice-clone pronounce --profile $P --script guion.txt
+voice-clone pronounce --profile $P --script guion.txt --learn-script --output-dir aprender/
 
-# 4. Escucha las frases de "to_review" (narracion/narration-report.json) y regraba solo esas
-voice-clone narrate ... --only 3 7
+# 4. Narración: escucha cada toma y se queda con la que tiene tu tono y las palabras correctas
+voice-clone narrate --profile $P --script guion.txt --output-dir narracion/
+
+# 5. Escucha las frases de "to_review" (narracion/narration-report.json) y regraba solo esas
+voice-clone narrate --profile $P --script guion.txt --output-dir narracion/ --only 3 7
 ```
 
-## Qué trae la 0.2.0 (lecciones de producción)
+## Hablar bien: cómo la skill cuida la pronunciación
 
-| Problema real | Lo que hace la skill |
-|---|---|
-| Una frase salió con **otra voz**, 8 semitonos más aguda | **Filtro de fidelidad:** mide tono (F0) y timbre de cada toma contra tu muestra; acepta hasta 1,2 semitonos y timbre 4,3; intenta hasta 10 veces y se queda con la mejor |
-| Con la transcripción de la muestra, el modelo **cortaba** frases o **balbuceaba** 30 s | No envía la transcripción por defecto |
-| Tomas cortadas o repetidas | Descarta duraciones fuera de 6–16 caracteres por segundo |
-| **Volumen que salta** entre frases | Recorta silencios de los extremos e iguala todo a −20 dB |
-| Palabras de marca **mal pronunciadas** | **Diccionario de pronunciación** solo en el audio; los subtítulos mantienen la ortografía correcta |
-| Párrafos largos hacían **derivar** la voz | Guiones en frases cortas (hasta ~42 caracteres) |
+1. **Diccionario base por idioma** (pt, en, es) con las palabras que el modelo más falla: app, WhatsApp, YouTube, Google, Wi-Fi, email… El diccionario de tu perfil gana.
+2. **Reglas automáticas:** dinero, `40%`, números, siglas, sitios web (`afirma.cc` → "afirma punto ce ce") y correos.
+3. **Encontrar palabras difíciles** en el guion antes de grabar (`pronounce --script`).
+4. **Aprender con tu voz** (`pronounce --learn palabra` o `--learn-script`): la skill dice la palabra en varias grafías, escucha con Whisper y guarda la que fue entendida.
+5. **Cada toma se escucha** en la narración: si una palabra sale cambiada o se pierde, prueba otra toma; si ninguna sale limpia, la frase va a `to_review` con las palabras sospechosas.
+6. **Vista previa:** `pronounce --text "..."` muestra exactamente qué se dirá. Corrección manual: `pronounce --add "WhatsApp=guasap"`.
+
+Los subtítulos siempre mantienen la ortografía correcta.
 
 ## Cómo escribir un buen guion
 

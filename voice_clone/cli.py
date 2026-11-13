@@ -17,6 +17,15 @@ from .profile import prepare_audio, validate_profile
 from .suite import run_voice_suite
 
 
+def _profile_language(profile: Path, language: str | None) -> str:
+    if language:
+        return language
+    try:
+        return validate_profile(profile).get("language", "Portuguese")
+    except (VoiceCloneError, OSError):
+        return "Portuguese"
+
+
 def _print(data: dict) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
@@ -41,6 +50,26 @@ def parser() -> argparse.ArgumentParser:
                          help="Idioma da voz: Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese, Russian.")
     prepare.add_argument("--profiles-dir", type=Path, default=PROFILES_DIR)
 
+    rec = commands.add_parser("record", help="Captação guiada: mostra o texto de leitura, grava o microfone e analisa a amostra.")
+    rec.add_argument("--language", default="Portuguese")
+    rec.add_argument("--guide", action="store_true", help="Só mostra o texto de leitura e as dicas, sem gravar.")
+    rec.add_argument("--analyze", type=Path, help="Só analisa uma amostra já gravada (WAV).")
+    rec.add_argument("--output", type=Path, default=Path("minha-voz.wav"))
+    rec.add_argument("--seconds", type=int, default=45)
+    rec.add_argument("--device", default=":default", help="Microfone no formato do AVFoundation (ex.: ':0').")
+
+    say = commands.add_parser("pronounce", help="Pronúncia: mostra como o texto será falado, acha palavras difíceis, "
+                                                "aprende a grafia certa na sua voz e grava no dicionário do perfil.")
+    say.add_argument("--profile", type=Path, required=True)
+    say.add_argument("--language")
+    say.add_argument("--text", help="Mostra como este texto será falado.")
+    say.add_argument("--script", type=Path, help="Roteiro (.txt/.json): mostra as palavras difíceis ainda fora do dicionário.")
+    say.add_argument("--add", nargs="+", metavar="TERMO=FALA", help="Grava no dicionário do perfil. Ex.: 'Admin=Adimin'.")
+    say.add_argument("--learn", nargs="+", metavar="TERMO", help="Testa grafias de cada termo na sua voz e guarda a entendida.")
+    say.add_argument("--learn-script", action="store_true", help="Com --script: aprende todas as palavras difíceis do roteiro.")
+    say.add_argument("--output-dir", type=Path, help="Guarda os áudios de teste do --learn para ouvir.")
+    say.add_argument("--no-save", action="store_true", help="No --learn, só relata; não grava no dicionário.")
+
     profile = commands.add_parser("profile", help="Opera perfis privados.")
     profile_commands = profile.add_subparsers(dest="profile_command", required=True)
     profile_validate = profile_commands.add_parser("validate")
@@ -56,7 +85,8 @@ def parser() -> argparse.ArgumentParser:
     generate.add_argument("--takes", type=int, default=10,
                           help="Tomadas no máximo; grava a mais fiel ao tom e timbre da referência (1 = sem filtro).")
     generate.add_argument("--max-semitones", type=float, default=1.2)
-    generate.add_argument("--max-timbre", type=float, default=4.3)
+    generate.add_argument("--max-timbre", type=float, default=6.0)
+    generate.add_argument("--no-check-words", action="store_true", help="Não escuta as tomadas com o Whisper.")
     generate.add_argument("--language", help="Idioma desta fala (padrão: o do perfil).")
     generate.add_argument("--pronunciation", type=Path, help="Dicionário extra de pronúncia (JSON com 'entries').")
 
@@ -66,7 +96,8 @@ def parser() -> argparse.ArgumentParser:
     script.add_argument("--output-dir", type=Path, required=True)
     script.add_argument("--takes", type=int, default=10)
     script.add_argument("--max-semitones", type=float, default=1.2)
-    script.add_argument("--max-timbre", type=float, default=4.3)
+    script.add_argument("--max-timbre", type=float, default=6.0)
+    script.add_argument("--no-check-words", action="store_true", help="Não escuta as tomadas com o Whisper.")
     script.add_argument("--language")
     script.add_argument("--only", type=int, nargs="*", help="Regravar só estas falas (números a partir de 1).")
 
@@ -79,6 +110,45 @@ def parser() -> argparse.ArgumentParser:
     test.add_argument("--profile", type=Path)
     test.add_argument("--cases", type=Path)
     return root
+
+
+def _script_text(path: Path) -> str:
+    if path.suffix.lower() == ".json":
+        return "\n".join(str(line.get("text", "")) for line in json.loads(path.read_text(encoding="utf-8")).get("lines", []))
+    return path.read_text(encoding="utf-8")
+
+
+def _pronounce(args) -> int:
+    from .learn import learn, scan
+    from .pronunciation import add, load, speakable
+
+    language = _profile_language(args.profile, args.language)
+    done = False
+    if args.add:
+        for item in args.add:
+            term, sep, spoken = item.partition("=")
+            if not sep or not term.strip() or not spoken.strip():
+                raise VoiceCloneError(f"Use TERMO=FALA (recebido: {item}).")
+            _print(add(args.profile, term.strip(), spoken.strip()))
+        done = True
+    if args.text:
+        spoken, changes = speakable(args.text, args.profile, language)
+        _print({"written": args.text, "spoken": spoken, "changes": changes})
+        done = True
+    terms = list(args.learn or [])
+    if args.script:
+        found = scan(_script_text(args.script), language, load(args.profile, language=language, base=True))
+        _print({"script": str(args.script), "difficult_words": found,
+                "next": "voice-clone pronounce --profile <perfil> --script <roteiro> --learn-script"})
+        if args.learn_script:
+            terms += [item["term"] for item in found]
+        done = True
+    if terms:
+        _print(learn(args.profile, terms, language, save=not args.no_save, output_dir=args.output_dir))
+        done = True
+    if not done:
+        raise VoiceCloneError("Diga o que fazer: --text, --script, --add ou --learn.")
+    return 0
 
 
 def _run_installer(repair: bool = False) -> int:
@@ -114,11 +184,23 @@ def main(argv: list[str] | None = None) -> int:
             text = args.text if args.text is not None else args.text_file.read_text(encoding="utf-8")
             _print(synthesize(args.profile, text, args.output, args.manifest, takes=args.takes,
                               max_semitones=args.max_semitones, max_timbre=args.max_timbre,
-                              language=args.language, pronunciation=args.pronunciation))
+                              language=args.language, pronunciation=args.pronunciation,
+                              check_words=not args.no_check_words))
         elif args.command == "narrate":
             _print(narrate(args.profile, args.script, args.output_dir, takes=args.takes,
                            max_semitones=args.max_semitones, max_timbre=args.max_timbre,
-                           language=args.language, only=args.only))
+                           language=args.language, only=args.only, check_words=not args.no_check_words))
+        elif args.command == "record":
+            from .acquisition import analyze, guide, record
+            if args.guide:
+                info = guide(args.language)
+                print("\n".join(f"• {tip}" for tip in info["tips"]) + "\n\n" + info["reading"])
+            elif args.analyze:
+                _print(analyze(args.analyze))
+            else:
+                _print(record(args.output, args.seconds, args.device, args.language))
+        elif args.command == "pronounce":
+            return _pronounce(args)
         elif args.command == "verify":
             _print(verify(args.audio, args.text, args.manifest))
         elif args.command == "test":

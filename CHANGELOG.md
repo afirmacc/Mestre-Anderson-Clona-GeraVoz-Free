@@ -2,6 +2,25 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.3.0 — 2026-11-13
+
+Falar certo: captação da voz e pronúncia (pedido do Mestre Anderson Menezes de Oliveira após o teste da 0.2.0).
+
+### Adicionado
+
+- `voice-clone record`: texto de leitura por idioma (pt, en, es) que cobre os sons da língua, dicas de gravação, gravação pelo microfone (`--output`) e análise da amostra (`--analyze`: duração de voz, ruído, saturação, volume);
+- `prepare` analisa a amostra, recusa a ruim com a explicação de como regravar, corta o silêncio das pontas e iguala o volume da referência; a análise fica no perfil (`sample_quality`);
+- dicionários base de pronúncia em `voice_clone/dicionarios/` (pt, en, es); o do perfil vence;
+- regras automáticas por idioma: dinheiro, porcentagem, horas, "7x", números por extenso, siglas soletradas, sites e e-mails;
+- escuta automática (Whisper local) de cada tomada: palavra trocada ou engolida faz tentar outra tomada; status `CONFERIR_PRONUNCIA` com `words.suspects`;
+- `voice-clone pronounce`: `--text` (mostra o que será falado), `--script` (acha palavras difíceis), `--learn`/`--learn-script` (testa grafias na sua voz e guarda a entendida), `--add TERMO=FALA`;
+- roteiro `.json` com `speak` passa a ignorar dicionário e regras naquela fala.
+
+### Mudado
+
+- limite de timbre de 4,3 para 6,0: o timbre varia com o conteúdo da frase e barrava tomadas boas; o tom (1,2 semitom) segue decisivo;
+- toda tomada com tom certo é escutada, mesmo com timbre acima do limite.
+
 ## 0.2.0 — 2026-11-13
 
 Lições da produção real de vídeos narrados com voz clonada (Mestre Anderson Menezes de Oliveira · afirma.cc).

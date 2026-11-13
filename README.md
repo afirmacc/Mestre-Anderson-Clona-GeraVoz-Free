@@ -2,7 +2,7 @@
 
 **Português** · [English](README.en.md) · [Español](README.es.md)
 
-![versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-blue)
+![versão](https://img.shields.io/badge/vers%C3%A3o-0.3.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/processamento-100%25%20local-success)
@@ -30,39 +30,44 @@ cd ia-skill-clonagem-voz
 
 O instalador é idempotente: pede confirmação antes de instalar ferramentas ou baixar o modelo (Qwen3-TTS 1.7B, 8 bits, ~2 GB) e, na segunda execução, só revalida.
 
-## Uso em 4 passos
+## Uso em 5 passos
 
 ```bash
-# 1. Perfil: 15 a 40 s de fala natural, limpa, um falante só, com consentimento assinado
-voice-clone prepare --input minha-voz.m4a --profile-id minha-voz \
-  --consent consentimento.txt --language Portuguese
+# 1. Captação: veja o texto de leitura (cobre os sons do português) e as dicas, grave e confira
+voice-clone record --guide
+voice-clone record --output minha-voz.wav          # ou grave no celular
+voice-clone record --analyze minha-voz.wav         # duração, ruído, estouro: diz o que corrigir
 
-# 2. Uma fala (até 10 tomadas; grava a mais fiel ao seu tom e timbre)
-voice-clone synthesize --profile ~/.local/share/voice-clone/profiles/minha-voz \
-  --text "Olá! Esta é a minha voz." --output ola.wav
+# 2. Perfil (com consentimento assinado)
+voice-clone prepare --input minha-voz.wav --profile-id minha-voz --consent consentimento.txt
+P=~/.local/share/voice-clone/profiles/minha-voz
 
-# 3. Um roteiro inteiro (uma fala por linha), já com volume igual entre as falas
-voice-clone narrate --profile ~/.local/share/voice-clone/profiles/minha-voz \
-  --script templates/roteiro-exemplo.txt --output-dir narracao/
+# 3. Pronúncia: acha as palavras difíceis do roteiro e aprende como a SUA voz deve falá-las
+voice-clone pronounce --profile $P --script roteiro.txt
+voice-clone pronounce --profile $P --script roteiro.txt --learn-script --output-dir aprender/
 
-# 4. Ouça as falas listadas em "to_review" no narracao/narration-report.json e regrave só elas
-voice-clone narrate ... --only 3 7
+# 4. Narração: escuta cada tomada e fica com a que tem o seu tom e as palavras certas
+voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/
+
+# 5. Ouça as falas de "to_review" (narracao/narration-report.json) e regrave só elas
+voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/ --only 3 7
 ```
 
-## O que a 0.2.0 traz (lições da produção)
+## Falar certo: como a skill cuida da pronúncia
 
-| Problema real | Solução na skill |
-|---|---|
-| Uma fala saiu com **outra voz**, 8 semitons acima | **Filtro de fidelidade:** mede tom (F0) e timbre de cada tomada contra a sua amostra; aceita até 1,2 semitom e timbre 4,3; tenta até 10 vezes e fica com a melhor |
-| Com a transcrição da amostra, o modelo **cortava** a fala ou **balbuciava** 30 s | Não envia a transcrição por padrão |
-| Tomadas cortadas ou com repetição | Descarta duração fora de 6–16 caracteres por segundo |
-| **Volume pulando** entre as falas | Corta o silêncio das pontas e iguala tudo a −20 dB |
-| "Admin" e "app" **pronunciados errado** | **Dicionário de pronúncia** (`"Admin": "Adimin"`, `"app": "ápi"`) só no áudio; a legenda continua certa |
-| Parágrafos longos **derivavam** a voz | Roteiro em falas curtas (até ~42 caracteres) |
+1. **Dicionário base por idioma** (pt, en, es) com as palavras que o modelo mais erra: app, Admin, site, WhatsApp, YouTube, Google, Wi-Fi, login, download, PIX… O dicionário do seu perfil vence o base.
+2. **Regras automáticas:** `R$ 19,90` → "dezenove reais e noventa centavos", `30%` → "trinta por cento", `10h30`, `7x`, `2026`, siglas (`CPF` → "cê pê éfe"), sites (`afirma.cc` → "afirma ponto cê cê") e e-mails.
+3. **Achar palavras difíceis** no roteiro antes de gravar (`pronounce --script`).
+4. **Aprender na sua voz** (`pronounce --learn termo` ou `--learn-script`): a skill fala a palavra em algumas grafias, escuta com o Whisper e guarda no seu dicionário a que foi entendida.
+5. **Escuta de cada tomada** na narração: palavra trocada ou engolida faz a skill tentar outra tomada; se nenhuma sair limpa, a fala vai para `to_review` com as palavras suspeitas.
+6. **Ver antes de gravar:** `pronounce --text "..."` mostra exatamente o que será falado. Correção manual: `pronounce --add "Admin=Adimin"`.
+
+A legenda continua sempre com a grafia certa.
 
 ## Escrevendo um bom roteiro
 
 - Uma ideia por fala, até umas 7 palavras.
+- Rode `voice-clone pronounce --script` antes de narrar.
 - `.txt`: uma fala por linha. `.json`: `{"lines": [{"text": "Acesse afirma.cc", "speak": "Acesse afirma ponto cê cê."}]}` — `text` vai para a legenda, `speak` é como falar.
 - Siglas, nomes estrangeiros e endereços: escreva como se fala.
 - Exemplos em [`templates/`](templates/).

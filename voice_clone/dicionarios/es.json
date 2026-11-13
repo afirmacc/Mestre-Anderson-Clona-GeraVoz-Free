@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "language": "es",
+  "comment": "Diccionario base: palabras que el modelo suele leer mal en español. Clave = ortografía correcta; valor = cómo decirla. El diccionario de tu perfil gana sobre este.",
+  "entries": {
+    "app": "ap",
+    "apps": "aps",
+    "Admin": "ádmin",
+    "online": "onlain",
+    "offline": "oflain",
+    "email": "imeil",
+    "e-mail": "imeil",
+    "WhatsApp": "guasap",
+    "YouTube": "yutub",
+    "Google": "gugel",
+    "Facebook": "feisbuk",
+    "iPhone": "aifon",
+    "Wi-Fi": "uifi",
+    "software": "sofguer",
+    "hardware": "jardguer",
+    "smartphone": "esmartfon",
+    "OK": "okei",
+    "IA": "i a",
+    "ChatGPT": "chat ye pe te",
+    "Microsoft": "maicrosoft",
+    "Apple": "épol",
+    "iOS": "ai o ese",
+    "macOS": "mac o ese"
+  }
+}

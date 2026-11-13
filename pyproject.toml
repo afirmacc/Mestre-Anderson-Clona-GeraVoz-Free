@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.2.0"
-description = "Clonagem local e autorizada de voz para agentes de IA: fidelidade de tom e timbre, pronúncia, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
+version = "0.3.0"
+description = "Clonagem local e autorizada de voz para agentes de IA: captação guiada, pronúncia certa (dicionários, escuta e aprendizado), fidelidade de tom, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Mestre Anderson Menezes de Oliveira", email = "app@afirma.cc" }]
@@ -33,6 +33,9 @@ voice-clone = "voice_clone.cli:main"
 
 [tool.setuptools]
 packages = ["voice_clone"]
+
+[tool.setuptools.package-data]
+voice_clone = ["dicionarios/*.json"]
 
 [tool.setuptools.data-files]
 "share/ia-skill-clonagem-voz" = ["SKILL.md", "installers/install-macos.sh"]
