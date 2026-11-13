@@ -2,6 +2,13 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.5.1 — 2026-11-13
+
+### Documentado
+
+- dica de ouro da calibração real: o melhor perfil (timbre mais fiel de todos os testes, aprovado pelo titular) saiu de um **áudio de WhatsApp** de ~30 s gravado com o celular perto da boca; `criar-voz --input` aceita .opus/.m4a/.mp3;
+- para narração, falar mais calmo e grave que numa conversa, porque o clone copia o tom da amostra.
+
 ## 0.5.0 — 2026-11-13
 
 **Novo nome: Mestre Anderson Clona GeraVoz Free** (antes `ia-skill-clonagem-voz`). O endereço antigo no GitHub redireciona.

@@ -50,6 +50,8 @@ git clone https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free.git && 
 voice-clone crear-voz --language es
 ```
 
+**Consejo de oro (prueba real):** la mejor muestra vino de un **audio de WhatsApp grabado con el celular cerca de la boca**, en un lugar tranquilo, unos 30 s hablando con naturalidad (voz a −13 dB, fondo −54 dB). ¿Tienes uno así? Usa `voice-clone crear-voz --input audio.opus` (.opus, .m4a, .mp3, .wav). Para narrar, habla más calmado y grave que en una charla: el clon copia el tono de la muestra.
+
 `crear-voz` hace, en orden: consentimiento (escribes AUTORIZO) → prueba de volumen de 5 s ("acércate" o "puedes grabar") → lectura guiada que cubre los sonidos del idioma → análisis de la muestra (regraba hasta que esté bien) → perfil → frase de prueba reproducida al momento → tú apruebas. Luego pídele a tu agente: *"narra este guion con mi voz"*, o:
 
 ```bash

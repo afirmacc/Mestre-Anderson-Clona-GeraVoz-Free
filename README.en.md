@@ -50,6 +50,8 @@ git clone https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free.git && 
 voice-clone create-voice --language en
 ```
 
+**Golden tip (real test):** the best sample came from a **WhatsApp voice message recorded with the phone close to the mouth**, in a quiet place, about 30 s of natural speech (speech at −13 dB, background −54 dB). Have one like that? Use `voice-clone create-voice --input audio.opus` (.opus, .m4a, .mp3, .wav). For narration, speak calmer and lower than in a chat: the clone copies the sample's pitch.
+
 `create-voice` does, in order: consent (you type AUTORIZO) → 5-second level check ("move closer" or "ready") → guided reading covering the sounds of the language → sample analysis (re-record until it is good) → profile → test phrase played right away → you approve. Then just ask your agent: *"narrate this script with my voice"*, or:
 
 ```bash

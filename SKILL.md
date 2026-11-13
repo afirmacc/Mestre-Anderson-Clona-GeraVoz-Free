@@ -1,7 +1,7 @@
 ---
 name: mestre-anderson-clona-geravoz-free
 description: "Mestre Anderson Clona GeraVoz Free: clona uma voz autorizada e gera narração com IA 100% LOCAL e grátis, no próprio computador (Qwen3-TTS + MLX, Apple Silicon; nada vai para a nuvem, sem chave de API). Narra roteiros, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
-version: 0.5.0
+version: 0.5.1
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
@@ -24,7 +24,7 @@ Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma
 
 1. `command -v voice-clone`. Se não existir, rode o instalador que vem com a skill: `bash <pasta da skill>/installers/install-macos.sh` (pede confirmação antes de instalar algo ou baixar o modelo; segunda execução só revalida; cria o comando `voice-clone`). Se o computador já tem o Qwen3-TTS 1.7B Base 8bit baixado, use `--model-dir=<pasta>` e não baixa de novo.
 2. Peça à pessoa para rodar **no terminal dela** (precisa do microfone e de respostas): `voice-clone criar-voz`. O assistente faz tudo: consentimento (a pessoa digita AUTORIZO), teste de volume de 5 s, leitura guiada, análise com regravação até ficar boa, perfil, frase de teste tocada na hora e aprovação. Nunca grave nem aprove no lugar da pessoa.
-3. Já tem uma gravação boa? `voice-clone criar-voz --input gravacao.wav`.
+3. Já tem uma gravação boa? `voice-clone criar-voz --input gravacao.wav` (aceita .opus/.m4a/.mp3). Teste real: o melhor perfil saiu de um **áudio de WhatsApp** de ~30 s, celular perto da boca, lugar quieto. Para narrar, peça fala calma e mais grave que numa conversa (o clone copia o tom).
 4. Pronto: `voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<perfil> --script roteiro.txt --output-dir narracao/`.
 
 ## Fluxo detalhado (cada etapa avulsa)

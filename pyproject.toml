@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.5.0"
+version = "0.5.1"
 description = "Mestre Anderson Clona GeraVoz Free — clonagem local e autorizada de voz para agentes de IA: captação guiada, pronúncia certa (dicionários, escuta e aprendizado), fidelidade de tom, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
 readme = "README.md"
 requires-python = ">=3.10"
