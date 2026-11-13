@@ -15,6 +15,12 @@ def complete(model: Path) -> None:
 
 
 class CacheTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Não deixa a instalação real da máquina (model-dir) interferir nos testes.
+        self._local = patch("voice_clone.common.LOCAL_MODEL_FILE", Path("/nao/existe/model-dir"))
+        self._local.start()
+        self.addCleanup(self._local.stop)
+
     def test_finds_huggingface_hub_layout(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
