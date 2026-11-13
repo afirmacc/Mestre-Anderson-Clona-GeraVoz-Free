@@ -52,17 +52,17 @@ READING = {
 TIPS = {
     "pt": ["Ambiente silencioso, sem ventilador, ar-condicionado ou TV.",
            "Microfone a um palmo da boca, sempre na mesma distância.",
-           "Leia com a sua voz de narrar: natural, nem cochichando nem gritando.",
+           "Leia com a sua voz de narrar: calma, no seu tom natural. Ler \"de teste\" deixa a voz tensa e mais aguda, e o clone copia isso.",
            "Pode errar e repetir a frase; não tem problema.",
            "Só você falando, sem música de fundo."],
     "en": ["Quiet room: no fan, air conditioning or TV.",
            "Microphone about a hand's width from your mouth, at a steady distance.",
-           "Read in your narration voice: natural, neither whispering nor shouting.",
+           "Read in your narration voice: calm, in your natural pitch. Reading \"for a test\" makes the voice tense and higher, and the clone copies that.",
            "It is fine to stumble and repeat a sentence.",
            "Only you speaking, no background music."],
     "es": ["Ambiente silencioso, sin ventilador, aire acondicionado ni TV.",
            "Micrófono a un palmo de la boca, siempre a la misma distancia.",
-           "Lee con tu voz de narrar: natural, sin susurrar ni gritar.",
+           "Lee con tu voz de narrar: con calma, en tu tono natural. Leer \"de prueba\" tensa la voz y la vuelve más aguda, y el clon copia eso.",
            "Puedes equivocarte y repetir la frase.",
            "Solo tú hablando, sin música de fondo."],
 }
@@ -74,13 +74,7 @@ def guide(language: str | None = None) -> dict:
             "target_seconds": "25 a 40", "minimum_seconds": 15}
 
 
-def record(output: Path, seconds: int = 45, device: str = ":default", language: str | None = None) -> dict:
-    """Grava do microfone (macOS, FFmpeg + AVFoundation). Mostra o texto e as dicas antes."""
-    info = guide(language)
-    print("\n".join(f"• {tip}" for tip in info["tips"]))
-    print("\n" + info["reading"] + "\n")
-    print(f"Gravando {seconds} s… (Ctrl+C para parar antes)")
-    output.parent.mkdir(parents=True, exist_ok=True)
+def _capture(output: Path, seconds: int, device: str) -> None:
     command = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "avfoundation", "-i", device,
                "-t", str(seconds), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le", str(output)]
     try:
@@ -94,6 +88,58 @@ def record(output: Path, seconds: int = 45, device: str = ":default", language: 
         pass
     if not output.is_file():
         raise VoiceCloneError("Nada foi gravado.")
+
+
+def level_check(seconds: int = 5, device: str = ":default", language: str | None = None) -> dict:
+    """Teste rápido de volume antes da leitura completa: diz se dá para gravar ou o que ajustar."""
+    import tempfile
+
+    first = READING[lang_code(language)].splitlines()[0]
+    print(f"Teste de volume ({seconds} s). Leia em voz de narrar: \"{first}\"")
+    with tempfile.TemporaryDirectory() as temp:
+        sample = Path(temp) / "teste.wav"
+        _capture(sample, seconds, device)
+        import numpy as np
+
+        samples, rate = _read(sample)
+    frame = int(rate * 0.03)
+    frames = samples[: samples.size // frame * frame].reshape(-1, frame)
+    rms_db = 20 * np.log10(np.sqrt((frames ** 2).mean(axis=1)) + 1e-9)
+    noise_db, speech_db = float(np.percentile(rms_db, 10)), float(np.percentile(rms_db, 90))
+    peak = float(np.abs(samples).max())
+    if peak >= 0.99:
+        verdict, ready = "Estourando. Afaste o microfone ou baixe o volume de entrada.", False
+    elif speech_db < -30:
+        verdict, ready = ("Voz baixa. Chegue o microfone a um palmo da boca ou aumente o volume de entrada em "
+                          "Ajustes do Sistema > Som > Entrada."), False
+    elif noise_db > -50:
+        verdict, ready = "Ruído de fundo alto. Desligue ventilador, ar ou TV, ou mude de lugar.", False
+    else:
+        verdict, ready = "Volume bom. Pode gravar.", True
+    return {"speech_level_db": round(speech_db, 1), "noise_floor_db": round(noise_db, 1), "ready": ready,
+            "verdict": verdict}
+
+
+def record(output: Path, seconds: int = 45, device: str = ":default", language: str | None = None,
+           check_level: bool = True) -> dict:
+    """Grava do microfone (macOS, FFmpeg + AVFoundation): teste de volume, texto, gravação e análise."""
+    info = guide(language)
+    print("\n".join(f"• {tip}" for tip in info["tips"]) + "\n")
+    if check_level:
+        for attempt in range(3):
+            check = level_check(device=device, language=language)
+            print(f"→ {check['verdict']} (voz {check['speech_level_db']} dB, fundo {check['noise_floor_db']} dB)\n")
+            if check["ready"]:
+                break
+            if attempt < 2:
+                input("Ajuste e aperte Enter para testar de novo… ")
+        else:
+            raise VoiceCloneError("O volume não ficou bom em 3 testes. Ajuste o microfone e rode de novo "
+                                  "(ou use --no-level-check por sua conta).")
+    print(info["reading"] + "\n")
+    print(f"Gravando {seconds} s… (Ctrl+C para parar antes)")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    _capture(output, seconds, device)
     return analyze(output)
 
 
@@ -133,9 +179,10 @@ def analyze(path: Path) -> dict:
     peak_db = float(20 * np.log10(np.abs(samples).max() + 1e-9))
     snr = speech_db - noise_db
     problems, warnings = [], []
-    if speech_seconds < 8:
-        problems.append(f"Pouca voz ({speech_seconds:.0f} s). Leia o texto inteiro: 25 a 40 s de fala.")
-    elif speech_seconds < 15:
+    if speech_seconds < 15:
+        # Teste real: 11 s de voz útil deram um clone ruim; o perfil bom tinha 26 s.
+        problems.append(f"Pouca voz ({speech_seconds:.0f} s; o mínimo é 15). Leia o texto inteiro: 25 a 40 s de fala.")
+    elif speech_seconds < 25:
         warnings.append(f"Voz curta ({speech_seconds:.0f} s). Com 25 a 40 s o clone fica mais estável.")
     if speech_seconds > 60:
         warnings.append("Amostra longa (mais de 60 s de voz). 25 a 40 s bastam; o excesso só deixa mais lento.")

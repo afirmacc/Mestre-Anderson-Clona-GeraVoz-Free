@@ -12,7 +12,7 @@ from . import __version__
 from .common import PROFILES_DIR, VoiceCloneError
 from .doctor import diagnose, render_json, render_text
 from .operations import status as installation_status
-from .operations import narrate, synthesize, verify
+from .operations import compare, narrate, synthesize, verify
 from .profile import prepare_audio, validate_profile
 from .suite import run_voice_suite
 
@@ -50,6 +50,14 @@ def parser() -> argparse.ArgumentParser:
                          help="Idioma da voz: Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese, Russian.")
     prepare.add_argument("--profiles-dir", type=Path, default=PROFILES_DIR)
 
+    wiz = commands.add_parser("criar-voz", aliases=["create-voice", "crear-voz"],
+                              help="Assistente completo: teste de volume, leitura, análise, consentimento, perfil e teste de voz.")
+    wiz.add_argument("--language", help="pt, en ou es (pergunta se faltar).")
+    wiz.add_argument("--input", type=Path, help="Usar uma gravação já feita em vez de gravar agora.")
+    wiz.add_argument("--profiles-dir", type=Path, default=PROFILES_DIR)
+    wiz.add_argument("--device", default=":default")
+    wiz.add_argument("--seconds", type=int, default=45)
+
     rec = commands.add_parser("record", help="Captação guiada: mostra o texto de leitura, grava o microfone e analisa a amostra.")
     rec.add_argument("--language", default="Portuguese")
     rec.add_argument("--guide", action="store_true", help="Só mostra o texto de leitura e as dicas, sem gravar.")
@@ -57,6 +65,7 @@ def parser() -> argparse.ArgumentParser:
     rec.add_argument("--output", type=Path, default=Path("minha-voz.wav"))
     rec.add_argument("--seconds", type=int, default=45)
     rec.add_argument("--device", default=":default", help="Microfone no formato do AVFoundation (ex.: ':0').")
+    rec.add_argument("--no-level-check", action="store_true", help="Pula o teste de volume de 5 s antes da gravação.")
 
     say = commands.add_parser("pronounce", help="Pronúncia: mostra como o texto será falado, acha palavras difíceis, "
                                                 "aprende a grafia certa na sua voz e grava no dicionário do perfil.")
@@ -100,6 +109,14 @@ def parser() -> argparse.ArgumentParser:
     script.add_argument("--no-check-words", action="store_true", help="Não escuta as tomadas com o Whisper.")
     script.add_argument("--language")
     script.add_argument("--only", type=int, nargs="*", help="Regravar só estas falas (números a partir de 1).")
+
+    comp = commands.add_parser("compare", help="Narra o mesmo roteiro em dois ou mais perfis e junta para ouvir lado a lado.")
+    comp.add_argument("--profiles", type=Path, nargs="+", required=True)
+    comp.add_argument("--script", type=Path, required=True)
+    comp.add_argument("--output-dir", type=Path, required=True)
+    comp.add_argument("--takes", type=int, default=10)
+    comp.add_argument("--language")
+    comp.add_argument("--no-check-words", action="store_true")
 
     check = commands.add_parser("verify", help="Valida integridade técnica e manifesto.")
     check.add_argument("--audio", type=Path, required=True)
@@ -190,6 +207,12 @@ def main(argv: list[str] | None = None) -> int:
             _print(narrate(args.profile, args.script, args.output_dir, takes=args.takes,
                            max_semitones=args.max_semitones, max_timbre=args.max_timbre,
                            language=args.language, only=args.only, check_words=not args.no_check_words))
+        elif args.command in ("criar-voz", "create-voice", "crear-voz"):
+            from .wizard import run as create_voice
+            _print(create_voice(args.language, args.profiles_dir, args.device, args.seconds, args.input))
+        elif args.command == "compare":
+            _print(compare(args.profiles, args.script, args.output_dir, args.takes, args.language,
+                           not args.no_check_words))
         elif args.command == "record":
             from .acquisition import analyze, guide, record
             if args.guide:
@@ -198,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             elif args.analyze:
                 _print(analyze(args.analyze))
             else:
-                _print(record(args.output, args.seconds, args.device, args.language))
+                _print(record(args.output, args.seconds, args.device, args.language, not args.no_level_check))
         elif args.command == "pronounce":
             return _pronounce(args)
         elif args.command == "verify":

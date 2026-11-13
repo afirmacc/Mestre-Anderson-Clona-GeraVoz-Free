@@ -231,6 +231,63 @@ def narrate(profile_dir: Path, script: Path, output_dir: Path, takes: int = 10,
     return report
 
 
+def compare(profiles: list[Path], script: Path, output_dir: Path, takes: int = 10, language: str | None = None,
+            check_words: bool = True) -> dict:
+    """Narra o mesmo roteiro em dois ou mais perfis e junta tudo para ouvir lado a lado.
+
+    Gera `<perfil>.wav` (roteiro inteiro em cada voz), `lado-a-lado.wav` (fala 1 na voz A, fala 1
+    na voz B, …) e `comparison-report.json` com a qualidade de cada amostra de referência. Na
+    prática, a voz pior quase sempre vem da amostra (volume baixo, pouca voz, sala, tom tenso).
+    """
+    import subprocess
+
+    from .acquisition import analyze
+
+    if len(profiles) < 2:
+        raise VoiceCloneError("Informe pelo menos dois perfis para comparar.")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    summary, per_line = [], []
+    for profile_dir in profiles:
+        profile = validate_profile(profile_dir)
+        name = profile["profile_id"]
+        report = narrate(profile_dir, script, output_dir / name, takes=takes, language=language, check_words=check_words)
+        files = [Path(line["file"]) for line in report["lines"]]
+        per_line.append(files)
+        fidelity_lines = [line["fidelity"] for line in report["lines"] if line.get("fidelity")]
+        summary.append({
+            "profile": name,
+            "sample": analyze(profile_dir / profile["reference"]),
+            "mean_f0_hz": round(sum(f["f0_hz"] for f in fidelity_lines) / len(fidelity_lines), 1) if fidelity_lines else None,
+            "mean_timbre": round(sum(f["timbre"] for f in fidelity_lines) / len(fidelity_lines), 2) if fidelity_lines else None,
+            "to_review": report["to_review"],
+            "file": str(output_dir / f"{name}.wav"),
+        })
+        _join(files, output_dir / f"{name}.wav", subprocess)
+    _join([f for group in zip(*per_line) for f in group], output_dir / "lado-a-lado.wav", subprocess)
+    result = {"schema_version": 1, "script": str(script), "profiles": summary,
+              "side_by_side": str(output_dir / "lado-a-lado.wav"),
+              "note": "A máquina mede; quem escolhe a voz é o ouvido. Compare também a amostra: volume, segundos de voz e ruído.",
+              "human_qa_required": True}
+    write_json(output_dir / "comparison-report.json", result)
+    return result
+
+
+def _join(files: list[Path], target: Path, subprocess) -> None:
+    """Junta falas com 0,6 s de silêncio entre elas."""
+    if not files:
+        return
+    inputs, labels = [], []
+    for index, path in enumerate(files):
+        inputs += ["-i", str(path)]
+        labels.append(f"[{index}:a]apad=pad_dur=0.6[a{index}]")
+    graph = ";".join(labels) + ";" + "".join(f"[a{i}]" for i in range(len(files))) + f"concat=n={len(files)}:v=0:a=1"
+    try:
+        subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", graph, "-c:a", "pcm_s16le", str(target)],
+                       check=True, capture_output=True, text=True)
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        raise VoiceCloneError("FFmpeg não conseguiu juntar as falas.") from exc
+
+
 def verify(audio: Path, expected_text: str | None, manifest: Path | None = None) -> dict:
     technical = probe(audio)
     transcription = None

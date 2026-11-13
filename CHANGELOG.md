@@ -2,6 +2,24 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.4.0 — 2026-11-13
+
+Baixar, colocar a voz e sair funcionando, com captação certa (pedido do Mestre Anderson Menezes de Oliveira após comparar duas vozes).
+
+### Adicionado
+
+- `voice-clone criar-voz` (`create-voice`, `crear-voz`): assistente completo — consentimento digitado (AUTORIZO), teste de volume, leitura guiada, análise com regravação, perfil, frase de teste tocada na hora e aprovação humana registrada no perfil; `--input` para usar uma gravação já feita;
+- teste de volume de 5 s antes de gravar (`record`), com "chegue mais perto", "estourando", "ruído alto" ou "pode gravar";
+- `voice-clone compare --profiles A B`: mesmo roteiro em vários perfis, `lado-a-lado.wav` e a qualidade de cada amostra;
+- instalador cria o comando `voice-clone` em `~/.local/bin` (e oferece colocar no PATH), baixa o Whisper small e mostra o próximo passo;
+- documentação: "Comece em 3 passos" e o caso real de por que uma voz sai pior que outra (pt, en, es).
+
+### Mudado
+
+- amostra com menos de 15 s de voz é recusada (11 s deram clone ruim no teste real); abaixo de 25 s vira aviso;
+- dica de leitura: no tom de narrar, porque leitura "de teste" deixa a voz tensa e aguda e o clone copia isso;
+- instalador compara a versão instalada com a do código (não fica mais preso na 0.1.0rc2).
+
 ## 0.3.2 — 2026-11-13
 
 ### Mudado

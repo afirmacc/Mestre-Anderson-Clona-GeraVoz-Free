@@ -91,14 +91,16 @@ else
   "$VENV/bin/python" -m pip install "mlx==0.32.0" "mlx-audio==0.4.7" "numpy>=1.26,<3" "mlx-whisper>=0.4,<1"
 fi
 
-if "$VENV/bin/python" - <<'PY' >/dev/null 2>&1
-import importlib.metadata as m
-assert m.version("ia-skill-clonagem-voz") == "0.1.0rc2"
-PY
-then
-  echo "REUTILIZADO: pacote ia-skill-clonagem-voz 0.1.0rc2"
+WANTED_VERSION=""
+if [[ -n "$PROJECT_DIR" ]]; then
+  WANTED_VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$PROJECT_DIR/pyproject.toml" | head -1)"
+fi
+INSTALLED_VERSION="$("$VENV/bin/python" -c 'import importlib.metadata as m; print(m.version("ia-skill-clonagem-voz"))' 2>/dev/null || true)"
+if [[ -n "$INSTALLED_VERSION" && ( -z "$WANTED_VERSION" || "$INSTALLED_VERSION" == "$WANTED_VERSION" ) ]]; then
+  echo "REUTILIZADO: pacote ia-skill-clonagem-voz $INSTALLED_VERSION"
 elif [[ -n "$PROJECT_DIR" ]]; then
-  "$VENV/bin/python" -m pip install --no-deps "$PROJECT_DIR"
+  "$VENV/bin/python" -m pip install --upgrade "$PROJECT_DIR"
+  echo "ATUALIZADO: pacote ia-skill-clonagem-voz $WANTED_VERSION"
 else
   echo "BLOQUEADO_VOZ: pacote instalado não corresponde ao instalador e não há fonte para reparo." >&2
   exit 3
@@ -115,6 +117,40 @@ load_model("mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit")
 PY
   fi
 fi
+
+WHISPER_CACHE="$MODEL_CACHE/hub/models--mlx-community--whisper-small-mlx"
+if [[ "$SKIP_MODEL" -eq 0 ]]; then
+  if [[ -d "$WHISPER_CACHE" ]]; then
+    echo "REUTILIZADO: ouvido automático (Whisper small)"
+  elif confirm "Autoriza baixar o ouvido automático (Whisper small, ~500 MB) que confere a pronúncia?"; then
+    HF_HOME="$MODEL_CACHE" "$VENV/bin/python" -c 'from huggingface_hub import snapshot_download; snapshot_download("mlx-community/whisper-small-mlx")'
+  else
+    echo "IGNORADO: sem o Whisper a skill não confere a pronúncia de cada tomada."
+  fi
+fi
+
+# Comando voice-clone no terminal (atalho em ~/.local/bin que já aponta para o modelo local).
+BIN_DIR="$HOME/.local/bin"
+mkdir -p "$BIN_DIR"
+cat > "$BIN_DIR/voice-clone" <<WRAP
+#!/bin/bash
+export HF_HOME="\${HF_HOME:-$MODEL_CACHE}"
+export VOICE_CLONE_HOME="\${VOICE_CLONE_HOME:-$APP_DIR}"
+exec "$VENV/bin/voice-clone" "\$@"
+WRAP
+chmod +x "$BIN_DIR/voice-clone"
+echo "PRONTO: comando $BIN_DIR/voice-clone"
+case ":$PATH:" in
+  *":$BIN_DIR:"*) ;;
+  *)
+    if confirm "Adicionar $BIN_DIR ao PATH no ~/.zprofile (para o comando voice-clone funcionar em qualquer terminal)?"; then
+      echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zprofile"
+      echo "ATUALIZADO: ~/.zprofile (abra um terminal novo)"
+    else
+      echo "Use o caminho completo: $BIN_DIR/voice-clone"
+    fi
+    ;;
+esac
 
 VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/python" - <<PY
 from datetime import datetime, timezone
@@ -184,3 +220,6 @@ fi
 
 HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/voice-clone" status
 echo "Instalação/revalidação concluída."
+echo ""
+echo "Próximo passo: crie a sua voz (num terminal comum, com o microfone liberado):"
+echo "  voice-clone criar-voz"

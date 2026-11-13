@@ -1,7 +1,7 @@
 ---
 name: clonar-voz-local
 description: "Clona uma voz autorizada no próprio computador (Qwen3-TTS + MLX, Apple Silicon) e narra roteiros com ela, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
-version: 0.3.2
+version: 0.4.0
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
@@ -18,20 +18,37 @@ Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma
 - A automação mede voz e pronúncia; **a aprovação final é humana**.
 - Áudio sintético não pode ser usado para enganar (fraude, se passar por alguém, burlar autenticação por voz).
 
-## Fluxo completo
+## Primeiro uso (baixou a skill, quer a voz funcionando)
+
+1. `command -v voice-clone`. Se não existir, rode o instalador que vem com a skill: `bash <pasta da skill>/installers/install-macos.sh` (pede confirmação antes de instalar algo ou baixar o modelo; segunda execução só revalida; cria o comando `voice-clone`).
+2. Peça à pessoa para rodar **no terminal dela** (precisa do microfone e de respostas): `voice-clone criar-voz`. O assistente faz tudo: consentimento (a pessoa digita AUTORIZO), teste de volume de 5 s, leitura guiada, análise com regravação até ficar boa, perfil, frase de teste tocada na hora e aprovação. Nunca grave nem aprove no lugar da pessoa.
+3. Já tem uma gravação boa? `voice-clone criar-voz --input gravacao.wav`.
+4. Pronto: `voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<perfil> --script roteiro.txt --output-dir narracao/`.
+
+## Fluxo detalhado (cada etapa avulsa)
 
 Perfil padrão: `~/.local/share/voice-clone/profiles/<perfil>` (abaixo, `$P`).
 
-1. **Equipamento:** `voice-clone doctor --json`. Já instalado? `voice-clone status`; não reinstale. Senão `voice-clone install`.
-2. **Captação (o que mais pesa):** `voice-clone record --guide --language Portuguese` mostra o texto de leitura (cobre os sons do idioma) e as dicas. Grave com `voice-clone record --output minha-voz.wav` ou no celular, e confira com `voice-clone record --analyze minha-voz.wav` (duração, ruído, estouro). Amostra ruim é recusada com a explicação de como regravar.
+1. **Equipamento:** `voice-clone doctor --json`; `voice-clone status`.
+2. **Captação:** `voice-clone record --guide` (texto e dicas), `voice-clone record --output minha-voz.wav` (teste de volume + gravação), `voice-clone record --analyze minha-voz.wav`.
 3. **Perfil:** `voice-clone prepare --input minha-voz.wav --profile-id minha-voz --consent consentimento.txt --language Portuguese`.
-4. **Pronúncia antes de gravar:**
-   - `voice-clone pronounce --profile $P --script roteiro.txt` → lista as palavras difíceis (estrangeirismo, sigla, marca) que ainda não estão no dicionário.
-   - `voice-clone pronounce --profile $P --script roteiro.txt --learn-script --output-dir aprender/` → fala cada uma na sua voz em algumas grafias, escuta e guarda no dicionário a que foi entendida.
-   - `voice-clone pronounce --profile $P --text "..."` → mostra exatamente como o texto será falado.
-   - `voice-clone pronounce --profile $P --add "Admin=Adimin"` → correção manual.
-5. **Narrar:** `voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/` → `line-NN.leveled.wav` + `narration-report.json`.
-6. **Conferir:** ouça as falas em `to_review` (`CONFERIR_FIDELIDADE` = voz fora do tom; `CONFERIR_PRONUNCIA` = palavra suspeita, listada em `words.suspects`). Corrija o dicionário e regrave só elas: `--only 3 7`. Peça a aprovação humana antes de publicar.
+4. **Pronúncia antes de gravar:** `pronounce --script roteiro.txt` (palavras difíceis), `--learn-script --output-dir aprender/` (aprende na voz), `--text "..."` (prévia), `--add "Admin=Adimin"` (manual).
+5. **Narrar:** `voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/`.
+6. **Conferir:** ouça as falas em `to_review` e regrave só elas com `--only 3 7`. Aprovação humana antes de publicar.
+7. **Comparar vozes:** `voice-clone compare --profiles $P1 $P2 --script roteiro.txt --output-dir comparacao/` → `lado-a-lado.wav` e a qualidade de cada amostra.
+
+## Por que uma voz sai pior que outra (caso real)
+
+O modelo não "aprende" a pessoa: ele imita a amostra inteira, com sala, microfone e jeito de falar. Mesmo modelo, mesma skill, mesmo roteiro:
+
+| | Perfil aprovado | Perfil reprovado |
+|---|---|---|
+| Nível da fala | −13 dB | −35 dB (microfone longe) |
+| Voz acima do fundo | 58 dB | 22 dB |
+| Voz útil | 26 s | 11 s |
+| Tom | ~120 Hz (narração natural) | ~145 Hz (leitura tensa de "teste") |
+
+Por isso a skill faz o teste de volume antes, recusa voz baixa e menos de 15 s de voz, e pede leitura no tom de narrar. Igualar o volume depois **não** recupera uma amostra ruim.
 
 ## Como o texto vira fala
 
@@ -60,7 +77,7 @@ Com o `mlx-whisper` instalado, cada tomada com tom certo é transcrita e compara
 | Tomadas cortadas ou repetidas | Descarta duração fora de 6–16 caracteres por segundo |
 | Volume pulando entre falas | Iguala cada fala a −20 dB de média, com limitador |
 | "Admin" e "app" lidos errado | Dicionário base + do perfil, escuta automática e aprendizado (`--learn`) |
-| Amostra com ruído ou curta deixava o clone instável | Texto de leitura por idioma e análise da amostra no `prepare` |
+| Amostra baixa/curta/tensa deu clone ruim | Teste de volume, mínimo de 15 s de voz, voz baixa recusada, dica de tom; assistente `criar-voz` |
 
 ## Onde rodar
 

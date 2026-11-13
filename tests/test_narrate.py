@@ -50,5 +50,14 @@ class NarrateTests(unittest.TestCase):
                 narrate(Path(temp), script, Path(temp) / "saida")
 
 
+class CompareTests(unittest.TestCase):
+    def test_needs_two_profiles(self) -> None:
+        from voice_clone.operations import compare
+
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaises(VoiceCloneError):
+                compare([Path(temp)], Path(temp) / "r.txt", Path(temp) / "saida")
+
+
 if __name__ == "__main__":
     unittest.main()

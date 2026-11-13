@@ -2,7 +2,7 @@
 
 [Português](README.md) · **English** · [Español](README.es.md)
 
-![version](https://img.shields.io/badge/version-0.3.0-blue)
+![version](https://img.shields.io/badge/version-0.4.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/processing-100%25%20local-success)
@@ -12,25 +12,30 @@ Clone **your own voice** on your computer and narrate whole scripts with it — 
 > Created by **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
 > Born from real production work: the videos of the *Combinado em Família* app, narrated with the author's own voice. Every default in this skill comes from a mistake that actually happened.
 
-## Install as a skill
+## Start in 3 steps
 
 ```bash
+# 1. Get the skill (Claude Code, Codex, Hermes…)
 npx skills add afirmacc/ia-skill-clonagem-voz
+
+# 2. Install the tool (macOS Apple Silicon). Asks before downloading the model (~3 GB).
+git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
+
+# 3. Create your voice: the assistant guides everything and plays the result at the end
+voice-clone create-voice --language en
 ```
 
-Works with Claude Code, Codex, Hermes and any agent that reads `SKILL.md`. Then just ask your agent: *"narrate this script with my voice"*.
-
-## Install the tool (macOS Apple Silicon)
+`create-voice` does, in order: consent (you type AUTORIZO) → 5-second level check ("move closer" or "ready") → guided reading covering the sounds of the language → sample analysis (re-record until it is good) → profile → test phrase played right away → you approve. Then just ask your agent: *"narrate this script with my voice"*, or:
 
 ```bash
-git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git
-cd ia-skill-clonagem-voz
-./installers/install-macos.sh
+voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<your-profile> --script script.txt --output-dir narration/
 ```
 
-The installer is idempotent: it asks before installing tools or downloading the model (Qwen3-TTS 1.7B, 8-bit, ~2 GB) and only re-validates on a second run.
+### Why capture matters so much (real case)
 
-## Use in 5 steps
+The model imitates the whole sample: room, microphone and speaking style. Same model, same script: a good sample (speech at −13 dB, 26 s of voice, natural narration pitch) gave a top voice; a sample with the microphone too far (−35 dB, 11 s of voice, tense reading) gave a poor voice, even after leveling. That is why the skill checks the level first, rejects quiet or short samples and asks you to read in your narration voice.
+
+## Step by step (each stage on its own)
 
 ```bash
 # 1. Capture: see the reading text (covers the sounds of the language) and tips, record and check
@@ -63,6 +68,18 @@ voice-clone narrate --profile $P --script script.txt --output-dir narration/ --o
 6. **Preview:** `pronounce --text "..."` shows exactly what will be spoken. Manual fix: `pronounce --add "GUI=gooey"`.
 
 Subtitles always keep the correct spelling.
+
+## Production lessons (why the defaults are what they are)
+
+| Real problem | What the skill does |
+|---|---|
+| One line came out in **a different voice**, 8 semitones higher | **Fidelity filter:** measures pitch (F0) and timbre of every take against your sample; accepts up to 1.2 semitones (timbre only blocks gross changes); tries up to 10 times and keeps the best |
+| With the reference transcript, the model **cut** lines or **babbled** for 30 s | Does not send the transcript by default |
+| Truncated or repeating takes | Discards durations outside 6–16 characters per second |
+| **Loudness jumping** between lines | Trims edge silence and levels every line to −20 dB mean |
+| Brand words **mispronounced** | Base dictionary, automatic listening and learning the spelling in your voice |
+| A quiet, short or tense sample gave a **poor clone** | Level check, 15 s minimum of voice, quiet samples rejected, `create-voice` assistant |
+| Long paragraphs made the voice **drift** | Scripts in short lines (up to ~42 characters) |
 
 ## Writing a good script
 

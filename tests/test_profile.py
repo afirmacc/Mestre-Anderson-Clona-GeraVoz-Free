@@ -59,7 +59,7 @@ class ProfileTests(unittest.TestCase):
     @patch("voice_clone.profile.subprocess.run")
     def test_prepare_creates_private_profile(self, run) -> None:
         def fake_run(command, **kwargs):
-            write_voice(Path(command[-1]), 12)
+            write_voice(Path(command[-1]), 30)
         run.side_effect = fake_run
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

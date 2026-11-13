@@ -2,7 +2,7 @@
 
 [Português](README.md) · [English](README.en.md) · **Español**
 
-![versión](https://img.shields.io/badge/versi%C3%B3n-0.3.0-blue)
+![versión](https://img.shields.io/badge/versi%C3%B3n-0.4.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/procesamiento-100%25%20local-success)
@@ -12,25 +12,30 @@ Clona **tu propia voz** en tu computadora y narra guiones completos con ella —
 > Creada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
 > Nació de una producción real: los videos de la app *Combinado em Família*, narrados con la voz del autor. Cada configuración de esta skill viene de un error que realmente ocurrió.
 
-## Instalar como skill
+## Empieza en 3 pasos
 
 ```bash
+# 1. Descarga la skill (Claude Code, Codex, Hermes…)
 npx skills add afirmacc/ia-skill-clonagem-voz
+
+# 2. Instala la herramienta (macOS Apple Silicon). Pregunta antes de descargar el modelo (~3 GB).
+git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
+
+# 3. Crea tu voz: el asistente guía todo y reproduce el resultado al final
+voice-clone crear-voz --language es
 ```
 
-Funciona con Claude Code, Codex, Hermes y cualquier agente que lea `SKILL.md`. Luego pídele a tu agente: *"narra este guion con mi voz"*.
-
-## Instalar la herramienta (macOS Apple Silicon)
+`crear-voz` hace, en orden: consentimiento (escribes AUTORIZO) → prueba de volumen de 5 s ("acércate" o "puedes grabar") → lectura guiada que cubre los sonidos del idioma → análisis de la muestra (regraba hasta que esté bien) → perfil → frase de prueba reproducida al momento → tú apruebas. Luego pídele a tu agente: *"narra este guion con mi voz"*, o:
 
 ```bash
-git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git
-cd ia-skill-clonagem-voz
-./installers/install-macos.sh
+voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<tu-perfil> --script guion.txt --output-dir narracion/
 ```
 
-El instalador es idempotente: pregunta antes de instalar herramientas o descargar el modelo (Qwen3-TTS 1.7B, 8 bits, ~2 GB) y en la segunda ejecución solo vuelve a validar.
+### Por qué la captación importa tanto (caso real)
 
-## Uso en 5 pasos
+El modelo imita la muestra entera: sala, micrófono y forma de hablar. Mismo modelo, mismo guion: una muestra buena (voz a −13 dB, 26 s de voz, tono natural de narración) dio una voz excelente; una muestra con el micrófono lejos (−35 dB, 11 s de voz, lectura tensa) dio una voz mala, incluso igualando el volumen después. Por eso la skill prueba el volumen antes, rechaza muestras bajas o cortas y pide leer en tu tono de narrar.
+
+## Paso a paso (cada etapa por separado)
 
 ```bash
 # 1. Captación: mira el texto de lectura (cubre los sonidos del idioma) y los consejos, graba y revisa
@@ -63,6 +68,18 @@ voice-clone narrate --profile $P --script guion.txt --output-dir narracion/ --on
 6. **Vista previa:** `pronounce --text "..."` muestra exactamente qué se dirá. Corrección manual: `pronounce --add "WhatsApp=guasap"`.
 
 Los subtítulos siempre mantienen la ortografía correcta.
+
+## Lecciones de producción (por qué la configuración es así)
+
+| Problema real | Lo que hace la skill |
+|---|---|
+| Una frase salió con **otra voz**, 8 semitonos más aguda | **Filtro de fidelidad:** mide tono (F0) y timbre de cada toma contra tu muestra; acepta hasta 1,2 semitonos (el timbre solo bloquea cambios groseros); intenta hasta 10 veces y se queda con la mejor |
+| Con la transcripción de la muestra, el modelo **cortaba** frases o **balbuceaba** 30 s | No envía la transcripción por defecto |
+| Tomas cortadas o repetidas | Descarta duraciones fuera de 6–16 caracteres por segundo |
+| **Volumen que salta** entre frases | Recorta silencios de los extremos e iguala todo a −20 dB |
+| Palabras de marca **mal pronunciadas** | Diccionario base, escucha automática y aprendizaje de la grafía con tu voz |
+| Una muestra baja, corta o tensa dio un **clon malo** | Prueba de volumen, mínimo de 15 s de voz, muestras bajas rechazadas, asistente `crear-voz` |
+| Párrafos largos hacían **derivar** la voz | Guiones en frases cortas (hasta ~42 caracteres) |
 
 ## Cómo escribir un buen guion
 

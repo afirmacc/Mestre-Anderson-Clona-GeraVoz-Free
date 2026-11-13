@@ -2,7 +2,7 @@
 
 **Português** · [English](README.en.md) · [Español](README.es.md)
 
-![versão](https://img.shields.io/badge/vers%C3%A3o-0.3.0-blue)
+![versão](https://img.shields.io/badge/vers%C3%A3o-0.4.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
 ![local](https://img.shields.io/badge/processamento-100%25%20local-success)
@@ -12,25 +12,30 @@ Clone a **sua própria voz** no seu computador e narre roteiros inteiros com ela
 > Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
 > Nasceu da produção real dos vídeos do app *Combinado em Família*, narrados com a voz do autor. Cada padrão desta skill veio de um erro que aconteceu de verdade.
 
-## Instalar como skill
+## Comece em 3 passos
 
 ```bash
+# 1. Baixe a skill (Claude Code, Codex, Hermes…)
 npx skills add afirmacc/ia-skill-clonagem-voz
+
+# 2. Instale a ferramenta (macOS Apple Silicon). Pede confirmação antes de baixar o modelo (~3 GB).
+git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
+
+# 3. Crie a sua voz: o assistente guia tudo e toca o resultado no final
+voice-clone criar-voz
 ```
 
-Instala para Claude Code, Codex, Hermes e outros agentes compatíveis com `SKILL.md`. Depois é só pedir ao agente: *"narre este roteiro com a minha voz"*.
-
-## Instalar a ferramenta (macOS Apple Silicon)
+O `criar-voz` faz, nesta ordem: consentimento (você digita AUTORIZO) → teste de volume de 5 s ("chegue mais perto" ou "pode gravar") → leitura guiada que cobre os sons do idioma → análise da amostra (regrava até ficar boa) → perfil → frase de teste tocada na hora → você aprova. Depois é só pedir ao seu agente: *"narre este roteiro com a minha voz"*, ou:
 
 ```bash
-git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git
-cd ia-skill-clonagem-voz
-./installers/install-macos.sh
+voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<seu-perfil> --script roteiro.txt --output-dir narracao/
 ```
 
-O instalador é idempotente: pede confirmação antes de instalar ferramentas ou baixar o modelo (Qwen3-TTS 1.7B, 8 bits, ~2 GB) e, na segunda execução, só revalida.
+### Por que a captação importa tanto (caso real)
 
-## Uso em 5 passos
+O modelo imita a amostra inteira: sala, microfone e jeito de falar. Com o mesmo modelo e o mesmo roteiro, uma amostra boa (fala a −13 dB, 26 s de voz, tom natural de narração) deu uma voz "nota mil"; uma amostra com o microfone longe (−35 dB, 11 s de voz, leitura tensa) deu uma voz ruim, mesmo com o volume igualado depois. Por isso a skill testa o volume antes, recusa voz baixa ou curta e pede para ler no seu tom de narrar.
+
+## Passo a passo (cada etapa avulsa)
 
 ```bash
 # 1. Captação: veja o texto de leitura (cobre os sons do português) e as dicas, grave e confira
@@ -63,6 +68,18 @@ voice-clone narrate --profile $P --script roteiro.txt --output-dir narracao/ --o
 6. **Ver antes de gravar:** `pronounce --text "..."` mostra exatamente o que será falado. Correção manual: `pronounce --add "Admin=Adimin"`.
 
 A legenda continua sempre com a grafia certa.
+
+## Lições da produção (por que o padrão é assim)
+
+| Problema real | Solução na skill |
+|---|---|
+| Uma fala saiu com **outra voz**, 8 semitons acima | **Filtro de fidelidade:** mede tom (F0) e timbre de cada tomada contra a sua amostra; aceita até 1,2 semitom (o timbre só barra mudança grosseira); tenta até 10 vezes e fica com a melhor |
+| Com a transcrição da amostra, o modelo **cortava** a fala ou **balbuciava** 30 s | Não envia a transcrição por padrão |
+| Tomadas cortadas ou com repetição | Descarta duração fora de 6–16 caracteres por segundo |
+| **Volume pulando** entre as falas | Corta o silêncio das pontas e iguala tudo a −20 dB |
+| "Admin" e "app" **pronunciados errado** | Dicionário base, escuta automática e aprendizado da grafia na sua voz |
+| Amostra baixa, curta ou lida com voz tensa deu **clone ruim** | Teste de volume, mínimo de 15 s de voz, voz baixa recusada, assistente `criar-voz` |
+| Parágrafos longos **derivavam** a voz | Roteiro em falas curtas (até ~42 caracteres) |
 
 ## Escrevendo um bom roteiro
 
