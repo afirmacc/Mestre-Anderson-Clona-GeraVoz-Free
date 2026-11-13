@@ -143,7 +143,8 @@ def analyze(path: Path) -> dict:
         problems.append(f"Áudio estourado ({clipped:.2f}% saturado). Afaste o microfone ou baixe o ganho.")
     quiet = speech_db < -30 or peak_db < -18
     if quiet:
-        warnings.append(f"Voz baixa (nível {speech_db:.0f} dB; o ideal é entre −25 e −12). Chegue o microfone a um palmo "
+        # Teste real: amostra a -35 dB, mesmo com o volume igualado depois, gerou um clone ruim. Barra.
+        problems.append(f"Voz baixa (nível {speech_db:.0f} dB; o ideal é entre −25 e −12). Chegue o microfone a um palmo "
                         "da boca ou aumente o volume de entrada em Ajustes do Sistema > Som > Entrada.")
     if snr < 15 and not quiet:
         problems.append(f"Ruído alto (voz só {snr:.0f} dB acima do fundo). Grave em lugar silencioso.")

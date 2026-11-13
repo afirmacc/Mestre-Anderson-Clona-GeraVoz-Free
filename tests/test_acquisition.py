@@ -38,7 +38,9 @@ class AcquisitionTests(unittest.TestCase):
             with wave.open(str(path), "wb") as handle:
                 handle.setparams(params)
                 handle.writeframes(quiet.tobytes())
-            text = " ".join(analyze(path)["warnings"])
+            result = analyze(path)
+            text = " ".join(result["problems"] + result["warnings"])
+            self.assertFalse(result["ok"])
             self.assertIn("Voz baixa", text)
             self.assertNotIn("Desligue ventilador", text)
 

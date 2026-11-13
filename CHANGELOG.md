@@ -2,6 +2,12 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.3.2 — 2026-11-13
+
+### Mudado
+
+- voz gravada baixa (nível de fala abaixo de −30 dB ou pico abaixo de −18 dB) passa a recusar a amostra: no teste real, uma amostra a −35 dB gerou um clone claramente pior que o perfil gravado com volume certo, mesmo com o volume igualado depois.
+
 ## 0.3.1 — 2026-11-13
 
 ### Corrigido
