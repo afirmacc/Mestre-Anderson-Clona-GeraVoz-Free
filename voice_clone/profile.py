@@ -12,7 +12,7 @@ PROFILE_ID = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}$")
 
 
 def prepare_audio(source: Path, profile_dir: Path, profile_id: str, consent: Path,
-                  transcript: str | None = None) -> dict:
+                  transcript: str | None = None, language: str = "Portuguese") -> dict:
     if not PROFILE_ID.fullmatch(profile_id):
         raise VoiceCloneError("profile-id deve usar letras minúsculas, números e hífens.")
     if not source.is_file() or not consent.is_file():
@@ -34,6 +34,10 @@ def prepare_audio(source: Path, profile_dir: Path, profile_id: str, consent: Pat
     if output.stat().st_size < 48_000:
         output.unlink(missing_ok=True)
         raise VoiceCloneError("A amostra preparada é curta ou vazia demais.")
+    seconds = (output.stat().st_size - 44) / 48_000
+    if seconds < 8:
+        output.unlink(missing_ok=True)
+        raise VoiceCloneError("A amostra tem menos de 8 s de voz. Use 15 a 40 s de fala natural, limpa e de um único falante.")
     consent_target = profile_dir / "consent.txt"
     consent_target.write_bytes(consent.read_bytes())
     profile = {
@@ -41,10 +45,12 @@ def prepare_audio(source: Path, profile_dir: Path, profile_id: str, consent: Pat
         "profile_id": profile_id,
         "engine": "qwen3-mlx",
         "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit",
-        "language": "Portuguese",
+        "language": language,
         "reference": "reference.wav",
         "reference_sha256": sha256(output),
         "reference_transcript": transcript,
+        # A transcrição fica guardada, mas não é enviada ao modelo por padrão (ver qwen3_mlx.reference_text).
+        "use_reference_transcript": False,
         "consent_file": "consent.txt",
         "consent_sha256": sha256(consent_target),
         "created_at": datetime.now(timezone.utc).isoformat(),

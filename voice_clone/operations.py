@@ -15,6 +15,10 @@ from . import __version__
 from .audio import probe
 from .common import REPORTS_DIR, STATE_FILE, VoiceCloneError, model_cache_path, read_json, sha256, write_json
 from .profile import validate_profile
+from . import fidelity
+from .pronunciation import apply as apply_pronunciation
+from .pronunciation import load as load_pronunciation
+from .qwen3_mlx import generate_take, plausible_duration, write_wav
 from .qwen3_mlx import synthesize as mlx_synthesize
 
 
@@ -51,15 +55,60 @@ def status() -> dict:
     return {"schema_version": 1, "installation_valid": valid, "missing": missing, "components": components, "state": state}
 
 
-def synthesize(profile_dir: Path, text: str, output: Path, manifest: Path | None = None) -> dict:
+def _best_take(profile: dict, profile_dir: Path, spoken: str, output: Path, takes: int,
+               max_semitones: float, max_timbre: float, language: str | None) -> dict:
+    """Gera até `takes` tomadas e grava a mais fiel à referência (tom e timbre).
+
+    Para na primeira tomada aceita. Tomadas com duração implausível (cortadas ou balbuciadas)
+    são descartadas. Se nenhuma for aceita, grava a de melhor nota e marca CONFERIR.
+    """
+    reference = fidelity.measure(profile_dir / profile["reference"])
+    best = None
+    attempts = []
+    for number in range(1, takes + 1):
+        samples, rate = generate_take(profile, profile_dir, spoken, language=language)
+        seconds = len(samples) / rate
+        if not plausible_duration(spoken, seconds):
+            attempts.append({"take": number, "duration_seconds": round(seconds, 2), "discarded": "duration"})
+            continue
+        result = fidelity.distance(fidelity.measure_array(samples, rate), reference)
+        attempts.append({"take": number, "duration_seconds": round(seconds, 2), **result})
+        if best is None or result["score"] < best[0]["score"]:
+            best = (result, samples, rate, number)
+        if fidelity.accepted(result, max_semitones, max_timbre):
+            break
+    if best is None:
+        raise VoiceCloneError("BLOQUEADO_VOZ: nenhuma tomada com duração plausível para o texto.")
+    result, samples, rate, number = best
+    write_wav(output, samples, rate)
+    return {
+        "sample_rate": rate, "segments": 1, "duration_seconds": round(len(samples) / rate, 3),
+        "chosen_take": number, "takes_tried": len(attempts), "attempts": attempts,
+        "reference_f0_hz": round(reference["f0_hz"], 1),
+        "fidelity": result, "fidelity_ok": fidelity.accepted(result, max_semitones, max_timbre),
+    }
+
+
+def synthesize(profile_dir: Path, text: str, output: Path, manifest: Path | None = None,
+               takes: int = 1, max_semitones: float = fidelity.DEFAULT_MAX_SEMITONES,
+               max_timbre: float = fidelity.DEFAULT_MAX_TIMBRE, language: str | None = None,
+               pronunciation: Path | None = None) -> dict:
     profile = validate_profile(profile_dir)
     if profile["engine"] != "qwen3-mlx":
         raise VoiceCloneError("BLOQUEADO_VOZ: engine do perfil não disponível.")
-    generated = mlx_synthesize(profile, profile_dir, text, output)
+    spoken = apply_pronunciation(text, load_pronunciation(profile_dir, pronunciation))
+    if takes > 1:
+        generated = _best_take(profile, profile_dir, spoken, output, takes, max_semitones, max_timbre, language)
+    else:
+        extra = {"language": language} if language else {}
+        generated = mlx_synthesize(profile, profile_dir, spoken, output, **extra)
     technical = probe(output)
     if not technical["valid"]:
         output.unlink(missing_ok=True)
         raise VoiceCloneError("BLOQUEADO_VOZ: áudio gerado inválido.")
+    status = "AGUARDA_QA_HUMANO"
+    if takes > 1 and not generated.get("fidelity_ok"):
+        status = "CONFERIR_FIDELIDADE"
     result = {
         "schema_version": 1,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -68,16 +117,79 @@ def synthesize(profile_dir: Path, text: str, output: Path, manifest: Path | None
         "model": profile["model"],
         "reference_sha256": profile["reference_sha256"],
         "text": text,
+        "spoken_text": spoken,
         "output": str(output),
         "output_sha256": sha256(output),
         "fallback_used": False,
         "generation": generated,
         "technical_validation": technical,
-        "status": "AGUARDA_QA_HUMANO",
+        "status": status,
     }
     target = manifest or output.with_suffix(".manifest.json")
     write_json(target, result)
     return result
+
+
+def level(source: Path, target: Path, mean_db: float = -20.0) -> dict:
+    """Iguala o volume médio de uma fala (sem isso a narração "pula" de volume entre falas)."""
+    import subprocess
+
+    def run(command: list[str]) -> subprocess.CompletedProcess:
+        return subprocess.run(command, check=True, capture_output=True, text=True)
+
+    cut = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03"
+    trimmed = target.with_suffix(".trim.wav")
+    try:
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(source), "-af", f"{cut},areverse,{cut},areverse", str(trimmed)])
+        stats = run(["ffmpeg", "-hide_banner", "-i", str(trimmed), "-af", "volumedetect", "-f", "null", "-"]).stderr
+        current = float(re.search(r"mean_volume: (-?[\d.]+) dB", stats).group(1))
+        seconds = probe(trimmed)["duration_seconds"]
+        gain = mean_db - current
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(trimmed), "-af",
+             f"volume={gain:.2f}dB,afade=t=in:d=0.02,afade=t=out:st={max(0.0, seconds - 0.06):.3f}:d=0.06,"
+             "alimiter=limit=0.89:level=disabled", "-c:a", "pcm_s16le", str(target)])
+    except (FileNotFoundError, subprocess.CalledProcessError, AttributeError) as exc:
+        raise VoiceCloneError("FFmpeg não conseguiu nivelar a fala.") from exc
+    finally:
+        trimmed.unlink(missing_ok=True)
+    return {"mean_db_before": current, "gain_db": round(gain, 2), "duration_seconds": seconds}
+
+
+def narrate(profile_dir: Path, script: Path, output_dir: Path, takes: int = 10,
+            max_semitones: float = fidelity.DEFAULT_MAX_SEMITONES, max_timbre: float = fidelity.DEFAULT_MAX_TIMBRE,
+            language: str | None = None, only: list[int] | None = None, mean_db: float = -20.0) -> dict:
+    """Narração de um roteiro: uma fala por linha, cada uma com filtro de fidelidade e volume igualado.
+
+    O roteiro pode ser .txt (uma fala por linha) ou .json ({"lines": [{"text": ..., "speak": ...}]}).
+    `speak` (opcional) é a grafia de como se fala, só para a voz; `text` é a grafia certa (legenda).
+    Falas curtas (até ~42 caracteres, uma ideia) saem bem mais estáveis do que parágrafos.
+    """
+    if script.suffix.lower() == ".json":
+        lines = [dict(item) for item in read_json(script).get("lines", [])]
+    else:
+        lines = [{"text": line.strip()} for line in script.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not lines:
+        raise VoiceCloneError("Roteiro vazio.")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_lines = []
+    for number, line in enumerate(lines, 1):
+        if only and number not in only:
+            continue
+        raw = output_dir / f"line-{number:02d}.wav"
+        result = synthesize(profile_dir, line.get("speak") or line["text"], raw, output_dir / f"line-{number:02d}.manifest.json",
+                            takes=takes, max_semitones=max_semitones, max_timbre=max_timbre, language=language)
+        leveled = output_dir / f"line-{number:02d}.leveled.wav"
+        volume = level(raw, leveled, mean_db)
+        report_lines.append({"line": number, "text": line["text"], "spoken_text": result["spoken_text"],
+                             "status": result["status"], "fidelity": result["generation"].get("fidelity"),
+                             "chosen_take": result["generation"].get("chosen_take"),
+                             "file": str(leveled), "volume": volume})
+    report = {"schema_version": 1, "created_at": datetime.now(timezone.utc).isoformat(), "script": str(script),
+              "profile": str(profile_dir), "lines": report_lines,
+              "to_review": [item["line"] for item in report_lines if item["status"] != "AGUARDA_QA_HUMANO"],
+              "human_qa_required": True}
+    write_json(output_dir / "narration-report.json", report)
+    return report
 
 
 def verify(audio: Path, expected_text: str | None, manifest: Path | None = None) -> dict:

@@ -4,17 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.1.0rc2"
-description = "Diagnóstico e operação auditável de clonagem local autorizada de voz."
+version = "0.2.0"
+description = "Clonagem local e autorizada de voz para agentes de IA: fidelidade de tom e timbre, pronúncia, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "Anderson Oliveira" }]
+authors = [{ name = "Mestre Anderson Menezes de Oliveira", email = "app@afirma.cc" }]
+maintainers = [{ name = "Afirma", email = "app@afirma.cc" }]
+keywords = ["voice-cloning", "tts", "qwen3-tts", "mlx", "agent-skill", "claude", "codex", "hermes", "narration", "clonagem-de-voz"]
+dependencies = ["numpy>=1.26,<3"]
 license = "MIT"
 license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3",
+  "Natural Language :: Portuguese (Brazilian)",
+  "Natural Language :: English",
+  "Natural Language :: Spanish",
+  "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
+
+[project.urls]
+Homepage = "https://github.com/afirmacc/ia-skill-clonagem-voz"
+Afirma = "https://afirma.cc"
+Issues = "https://github.com/afirmacc/ia-skill-clonagem-voz/issues"
 
 [project.scripts]
 voice-clone = "voice_clone.cli:main"
@@ -25,7 +37,7 @@ packages = ["voice_clone"]
 [tool.setuptools.data-files]
 "share/ia-skill-clonagem-voz" = ["SKILL.md", "installers/install-macos.sh"]
 "share/ia-skill-clonagem-voz/schemas" = ["schemas/profile.schema.json", "schemas/manifest.schema.json"]
-"share/ia-skill-clonagem-voz/templates" = ["templates/consentimento.txt", "templates/voice-test-cases.json"]
+"share/ia-skill-clonagem-voz/templates" = ["templates/consentimento.txt", "templates/consent.en.txt", "templates/consentimiento.es.txt", "templates/voice-test-cases.json", "templates/pronunciation.example.json", "templates/roteiro-exemplo.txt", "templates/roteiro-exemplo.json"]
 
 [project.optional-dependencies]
 mlx = [

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "comment": "Copie para voice-profiles/<perfil>/pronunciation.json. A chave é a grafia certa (legenda); o valor é como a voz deve falar.",
+  "entries": {
+    "Admin": "Adimin",
+    "app": "ápi",
+    "site": "sáiti",
+    "afirma.cc": "afirma ponto cê cê",
+    "Wi-Fi": "uái fai"
+  }
+}

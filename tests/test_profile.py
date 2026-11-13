@@ -42,7 +42,7 @@ class ProfileTests(unittest.TestCase):
     @patch("voice_clone.profile.subprocess.run")
     def test_prepare_creates_private_profile(self, run) -> None:
         def fake_run(command, **kwargs):
-            Path(command[-1]).write_bytes(b"RIFF" + b"0" * 60_000)
+            Path(command[-1]).write_bytes(b"RIFF" + b"0" * 480_000)
         run.side_effect = fake_run
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -55,6 +55,18 @@ class ProfileTests(unittest.TestCase):
             self.assertEqual(result["status"], "AGUARDA_TESTE")
             self.assertTrue((target / "profile.json").is_file())
             self.assertEqual(validate_profile(target)["reference_transcript"], "Texto exato")
+            self.assertFalse(validate_profile(target)["use_reference_transcript"])
+
+    @patch("voice_clone.profile.subprocess.run")
+    def test_prepare_rejects_short_sample(self, run) -> None:
+        run.side_effect = lambda command, **kwargs: Path(command[-1]).write_bytes(b"RIFF" + b"0" * 60_000)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source, consent = root / "source.m4a", root / "consent.txt"
+            source.write_bytes(b"source")
+            consent.write_text("Autorização expressa e específica do titular.")
+            with self.assertRaises(VoiceCloneError):
+                prepare_audio(source, root / "curta", "curta", consent)
 
 
 if __name__ == "__main__":

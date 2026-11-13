@@ -1,3 +1,6 @@
-"""Ferramentas locais e auditáveis para clonagem autorizada de voz."""
+"""Ferramentas locais e auditáveis para clonagem autorizada de voz.
 
-__version__ = "0.1.0rc2"
+Criado por Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc).
+"""
+
+__version__ = "0.2.0"

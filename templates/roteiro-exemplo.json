@@ -1,0 +1,8 @@
+{
+  "comment": "text = grafia certa (vai para a legenda). speak = como a voz deve falar (opcional).",
+  "lines": [
+    {"text": "Conheça o app Admin."},
+    {"text": "Acesse afirma.cc", "speak": "Acesse afirma ponto cê cê."},
+    {"text": "Combinado é combinado."}
+  ]
+}

@@ -1,0 +1,5 @@
+Olá! Eu sou a voz deste vídeo.
+Cada linha deste arquivo é uma fala.
+Falas curtas soam mais naturais.
+Uma ideia por fala, até umas sete palavras.
+No fim, cada fala sai com o mesmo volume.

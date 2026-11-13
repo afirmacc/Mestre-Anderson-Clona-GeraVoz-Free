@@ -1,0 +1,9 @@
+Voice owner:
+Controller (who will use the voice):
+Authorized purpose:
+Authorized environments/machines:
+Term or revocation condition:
+Date:
+Express confirmation by the voice owner:
+
+This record stays with the private profile and must never be published to Git.

@@ -12,7 +12,7 @@ from . import __version__
 from .common import PROFILES_DIR, VoiceCloneError
 from .doctor import diagnose, render_json, render_text
 from .operations import status as installation_status
-from .operations import synthesize, verify
+from .operations import narrate, synthesize, verify
 from .profile import prepare_audio, validate_profile
 from .suite import run_voice_suite
 
@@ -37,6 +37,8 @@ def parser() -> argparse.ArgumentParser:
     prepare.add_argument("--profile-id", required=True)
     prepare.add_argument("--consent", type=Path, required=True)
     prepare.add_argument("--transcript")
+    prepare.add_argument("--language", default="Portuguese",
+                         help="Idioma da voz: Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese, Russian.")
     prepare.add_argument("--profiles-dir", type=Path, default=PROFILES_DIR)
 
     profile = commands.add_parser("profile", help="Opera perfis privados.")
@@ -51,6 +53,22 @@ def parser() -> argparse.ArgumentParser:
     text_group.add_argument("--text-file", type=Path)
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--manifest", type=Path)
+    generate.add_argument("--takes", type=int, default=10,
+                          help="Tomadas no máximo; grava a mais fiel ao tom e timbre da referência (1 = sem filtro).")
+    generate.add_argument("--max-semitones", type=float, default=1.2)
+    generate.add_argument("--max-timbre", type=float, default=4.3)
+    generate.add_argument("--language", help="Idioma desta fala (padrão: o do perfil).")
+    generate.add_argument("--pronunciation", type=Path, help="Dicionário extra de pronúncia (JSON com 'entries').")
+
+    script = commands.add_parser("narrate", help="Narra um roteiro: uma fala por linha, com filtro de fidelidade e volume igual.")
+    script.add_argument("--profile", type=Path, required=True)
+    script.add_argument("--script", type=Path, required=True, help=".txt (uma fala por linha) ou .json ({'lines': [{'text', 'speak'}]}).")
+    script.add_argument("--output-dir", type=Path, required=True)
+    script.add_argument("--takes", type=int, default=10)
+    script.add_argument("--max-semitones", type=float, default=1.2)
+    script.add_argument("--max-timbre", type=float, default=4.3)
+    script.add_argument("--language")
+    script.add_argument("--only", type=int, nargs="*", help="Regravar só estas falas (números a partir de 1).")
 
     check = commands.add_parser("verify", help="Valida integridade técnica e manifesto.")
     check.add_argument("--audio", type=Path, required=True)
@@ -89,12 +107,18 @@ def main(argv: list[str] | None = None) -> int:
             return _run_installer(repair=True)
         elif args.command == "prepare":
             target = args.profiles_dir / args.profile_id
-            _print(prepare_audio(args.input, target, args.profile_id, args.consent, args.transcript))
+            _print(prepare_audio(args.input, target, args.profile_id, args.consent, args.transcript, args.language))
         elif args.command == "profile":
             _print(validate_profile(args.profile))
         elif args.command == "synthesize":
             text = args.text if args.text is not None else args.text_file.read_text(encoding="utf-8")
-            _print(synthesize(args.profile, text, args.output, args.manifest))
+            _print(synthesize(args.profile, text, args.output, args.manifest, takes=args.takes,
+                              max_semitones=args.max_semitones, max_timbre=args.max_timbre,
+                              language=args.language, pronunciation=args.pronunciation))
+        elif args.command == "narrate":
+            _print(narrate(args.profile, args.script, args.output_dir, takes=args.takes,
+                           max_semitones=args.max_semitones, max_timbre=args.max_timbre,
+                           language=args.language, only=args.only))
         elif args.command == "verify":
             _print(verify(args.audio, args.text, args.manifest))
         elif args.command == "test":

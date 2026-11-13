@@ -1,242 +1,113 @@
 # IA Skill — Clonagem de Voz Local
 
-![status](https://img.shields.io/badge/status-release%20candidate-yellow)
+**Português** · [English](README.en.md) · [Español](README.es.md)
+
+![versão](https://img.shields.io/badge/vers%C3%A3o-0.2.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Hermes](https://img.shields.io/badge/Hermes-Agent%20Skill-6f42c1)
-![local](https://img.shields.io/badge/processamento-local-success)
+![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
+![local](https://img.shields.io/badge/processamento-100%25%20local-success)
 
-Clonagem de voz local, auditável e orientada por consentimento para agentes de IA — sem depender do ElevenLabs e sem enviar a voz para serviços externos.
+Clone a **sua própria voz** no seu computador e narre roteiros inteiros com ela — sem ElevenLabs, sem pagar por caractere e sem enviar sua voz para nenhum serviço. Funciona como **skill para agentes de IA** (Claude Code, Codex, Hermes e outros) e como linha de comando.
 
-> Criado a partir de colaboração e compartilhado para devolver conhecimento à comunidade.
+> Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
+> Nasceu da produção real dos vídeos do app *Combinado em Família*, narrados com a voz do autor. Cada padrão desta skill veio de um erro que aconteceu de verdade.
 
-## Estado do projeto
-
-> **Release candidate para macOS Apple Silicon.**
-
-A implementação do caminho Qwen3-TTS/MLX está disponível para homologação. Ainda não considere esta versão estável até concluir uma instalação limpa, uma segunda execução idempotente e o QA humano da voz no equipamento de destino.
-
-### O que já funciona
-
-- CLI com diagnóstico, instalação, reparo, perfis, síntese, verificação e testes;
-- instalador idempotente para macOS Apple Silicon;
-- adaptador Qwen3-TTS/MLX sem fallback;
-- preparação da amostra por FFmpeg e validação por hashes;
-- manifestos, relatórios, transcrição local e comparação textual;
-- testes automatizados e proteção contra vozes ou perfis no Git.
-
-### O que ainda precisa de homologação
-
-- instalação limpa em uma segunda máquina Hermes;
-- repetição da instalação sem novo download;
-- bateria completa com uma voz de teste consentida;
-- aprovação humana de semelhança, naturalidade e estabilidade;
-- Linux/NVIDIA e Windows/WSL2.
-
-## Documentação
-
-- [Instalação e bootstrap](docs/INSTALACAO.md)
-- [Arquitetura](docs/ARQUITETURA.md)
-- [Compatibilidade](docs/COMPATIBILIDADE.md)
-- [Estratégia de testes](docs/TESTES.md)
-- [Privacidade e consentimento](docs/PRIVACIDADE.md)
-- [Plano operacional](docs/PLANO.md)
-- [Política de releases](docs/RELEASES.md)
-- [Roadmap](ROADMAP.md)
-
-## Por que este projeto existe?
-
-Este projeto nasceu de uma experiência prática: criar uma voz local para produção de conteúdo sem cobrança por caractere e sem depender de uma plataforma externa.
-
-O objetivo é transformar esse aprendizado em uma skill que outras pessoas e IAs possam instalar, testar, auditar e melhorar juntas.
-
-## Princípios
-
-- **Local por padrão:** modelos e processamento ficam no equipamento do usuário.
-- **Consentimento obrigatório:** use somente sua própria voz ou uma voz expressamente autorizada.
-- **Sem fallback silencioso:** se o perfil ou a engine falhar, a operação deve parar.
-- **Instalação idempotente:** executar o instalador novamente não reinstala componentes válidos.
-- **Validação técnica e humana:** integridade pode ser automatizada; identidade e naturalidade exigem avaliação humana.
-- **Transparência:** plataformas não testadas são identificadas como experimentais ou não suportadas.
-
-## O que a skill pretende fazer
-
-```text
-amostra autorizada
-        ↓
-diagnóstico do equipamento
-        ↓
-instalação/revalidação da engine local
-        ↓
-preparação e validação do perfil de voz
-        ↓
-síntese local
-        ↓
-transcrição e testes automáticos
-        ↓
-avaliação humana
-        ↓
-relatório auditável
-```
-
-Comandos disponíveis:
+## Instalar como skill
 
 ```bash
-voice-clone doctor
-voice-clone install
-voice-clone status
-voice-clone prepare
-voice-clone profile validate
-voice-clone synthesize
-voice-clone verify
-voice-clone test
-voice-clone repair
+npx skills add afirmacc/ia-skill-clonagem-voz
 ```
 
-## Compatibilidade planejada
+Instala para Claude Code, Codex, Hermes e outros agentes compatíveis com `SKILL.md`. Depois é só pedir ao agente: *"narre este roteiro com a minha voz"*.
 
-| Plataforma | Backend | Estado |
-|---|---|---|
-| macOS Apple Silicon | Qwen3-TTS + MLX | Release candidate |
-| Linux + NVIDIA | Qwen3/PyTorch ou Chatterbox + CUDA | Planejado |
-| Windows + WSL2 + NVIDIA | Backend Linux/CUDA | Planejado |
-| CPU sem GPU compatível | Dependente da engine, desempenho reduzido | Experimental |
-| Mac Intel | Alternativa sem MLX | Não validado |
-
-O instalador deverá diagnosticar o equipamento e bloquear combinações incompatíveis em vez de tentar improvisar outra voz.
-
-## Instalação no Hermes
-
-O Hermes Agent utiliza o padrão `SKILL.md`. A skill deverá ser instalada em um diretório semelhante a:
-
-```text
-~/.hermes/skills/local/clonar-voz-local/
-```
-
-Após a instalação, abra uma nova sessão ou use `/reset` e confirme:
+## Instalar a ferramenta (macOS Apple Silicon)
 
 ```bash
-hermes skills list
-```
-
-Instale a partir de um clone verificado deste repositório:
-
-```bash
+git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git
+cd ia-skill-clonagem-voz
 ./installers/install-macos.sh
 ```
 
-O script pede confirmação antes de instalar ferramentas de sistema ou baixar o modelo. Uma segunda execução revalida e reutiliza os componentes corretos.
+O instalador é idempotente: pede confirmação antes de instalar ferramentas ou baixar o modelo (Qwen3-TTS 1.7B, 8 bits, ~2 GB) e, na segunda execução, só revalida.
 
-Na `0.1.0rc2`, o instalador reconhece o cache Hugging Face, resolve vínculos equivalentes entre `/tmp` e `/private/tmp`, evita reinstalar o mesmo pacote, executa smoke test do modelo e permite smoke test vocal explícito. O wheel também inclui os recursos exigidos pela CLI.
+## Uso em 4 passos
 
-## Instalação inteligente
+```bash
+# 1. Perfil: 15 a 40 s de fala natural, limpa, um falante só, com consentimento assinado
+voice-clone prepare --input minha-voz.m4a --profile-id minha-voz \
+  --consent consentimento.txt --language Portuguese
 
-O instalador será idempotente. Antes de modificar o equipamento, ele deverá verificar:
+# 2. Uma fala (até 10 tomadas; grava a mais fiel ao seu tom e timbre)
+voice-clone synthesize --profile ~/.local/share/voice-clone/profiles/minha-voz \
+  --text "Olá! Esta é a minha voz." --output ola.wav
 
-- skill e versão existentes;
-- Python e ambiente virtual;
-- FFmpeg, Git e ferramentas de compilação;
-- backend MLX, CUDA ou CPU;
-- bibliotecas instaladas e versões fixadas;
-- modelo e integridade do cache;
-- perfis privados existentes;
-- resultados dos testes anteriores.
+# 3. Um roteiro inteiro (uma fala por linha), já com volume igual entre as falas
+voice-clone narrate --profile ~/.local/share/voice-clone/profiles/minha-voz \
+  --script templates/roteiro-exemplo.txt --output-dir narracao/
 
-Componentes válidos serão reutilizados. Atualização, reparo ou reinstalação forçada deverão ser explícitos e preservar os perfis de voz.
-
-## Perfil privado
-
-Vozes reais nunca devem fazer parte da skill ou do repositório.
-
-Estrutura prevista:
-
-```text
-voice-profiles/<profile-id>/
-├── reference.wav
-├── profile.json
-├── consent.txt
-└── pronunciation.json
+# 4. Ouça as falas listadas em "to_review" no narracao/narration-report.json e regrave só elas
+voice-clone narrate ... --only 3 7
 ```
 
-Esses arquivos devem permanecer privados, fora do Git e com permissões restritas.
+## O que a 0.2.0 traz (lições da produção)
 
-## Testes
+| Problema real | Solução na skill |
+|---|---|
+| Uma fala saiu com **outra voz**, 8 semitons acima | **Filtro de fidelidade:** mede tom (F0) e timbre de cada tomada contra a sua amostra; aceita até 1,2 semitom e timbre 4,3; tenta até 10 vezes e fica com a melhor |
+| Com a transcrição da amostra, o modelo **cortava** a fala ou **balbuciava** 30 s | Não envia a transcrição por padrão |
+| Tomadas cortadas ou com repetição | Descarta duração fora de 6–16 caracteres por segundo |
+| **Volume pulando** entre as falas | Corta o silêncio das pontas e iguala tudo a −20 dB |
+| "Admin" e "app" **pronunciados errado** | **Dicionário de pronúncia** (`"Admin": "Adimin"`, `"app": "ápi"`) só no áudio; a legenda continua certa |
+| Parágrafos longos **derivavam** a voz | Roteiro em falas curtas (até ~42 caracteres) |
 
-A validação deverá cobrir:
+## Escrevendo um bom roteiro
 
-1. instalação limpa;
-2. segunda execução sem reinstalação;
-3. atualização e retorno de versão;
-4. reparo seletivo;
-5. download interrompido;
-6. modelo ausente ou corrompido;
-7. preservação dos perfis privados;
-8. frase curta;
-9. nomes, números, datas e siglas;
-10. termos do dicionário fonético;
-11. texto de 30 a 45 segundos;
-12. texto longo para detectar deriva de timbre.
+- Uma ideia por fala, até umas 7 palavras.
+- `.txt`: uma fala por linha. `.json`: `{"lines": [{"text": "Acesse afirma.cc", "speak": "Acesse afirma ponto cê cê."}]}` — `text` vai para a legenda, `speak` é como falar.
+- Siglas, nomes estrangeiros e endereços: escreva como se fala.
+- Exemplos em [`templates/`](templates/).
 
-Os relatórios planejados são:
+## Idiomas
 
-```text
-installation-report.json
-voice-test-report.json
-```
+Português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e russo (Qwen3-TTS). Use `--language` no perfil ou em cada fala.
 
-Uma voz só poderá receber o estado `PRONTO` após testes técnicos e aprovação humana autorizada.
+## Compatibilidade
+
+| Plataforma | Backend | Estado |
+|---|---|---|
+| macOS Apple Silicon | Qwen3-TTS + MLX | Usado em produção (0.2.0) |
+| Linux + NVIDIA | Qwen3/PyTorch + CUDA | Planejado |
+| Windows + WSL2 + NVIDIA | Backend Linux/CUDA | Planejado |
+| Mac Intel / só CPU | — | Não validado |
+
+Rode a geração num terminal comum do Mac: ela usa a GPU (Metal).
+
+## Princípios
+
+- **Local por padrão:** modelo e processamento no seu computador.
+- **Consentimento obrigatório:** só a sua voz ou uma voz autorizada por escrito ([pt](templates/consentimento.txt) · [en](templates/consent.en.txt) · [es](templates/consentimiento.es.txt)).
+- **Sem fallback silencioso:** se o perfil ou a engine falhar, para e avisa (`BLOQUEADO_VOZ`).
+- **Aprovação humana:** a máquina mede integridade e fidelidade; quem aprova a voz é uma pessoa.
+- **Privacidade:** amostras, perfis e áudios nunca vão para o Git (o `.gitignore` bloqueia).
 
 ## Uso responsável
 
-Não use este projeto para:
+Não use para clonar alguém sem autorização, fraude, se passar por outra pessoa, burlar autenticação por voz ou fabricar declarações de terceiros. Na dúvida sobre autorização ou identidade, o estado correto é `BLOQUEADO_VOZ`.
 
-- clonar uma pessoa sem autorização;
-- praticar fraude ou personificação enganosa;
-- contornar autenticação por voz;
-- fabricar declarações atribuídas a terceiros;
-- ocultar a natureza sintética do áudio quando isso puder induzir alguém ao erro.
+## Documentação
 
-Se a autorização, o perfil ou a identidade da voz estiverem incertos, o estado correto é `BLOQUEADO_VOZ`.
+[Instalação](docs/INSTALACAO.md) · [Arquitetura](docs/ARQUITETURA.md) · [Compatibilidade](docs/COMPATIBILIDADE.md) · [Testes](docs/TESTES.md) · [Privacidade](docs/PRIVACIDADE.md) · [Plano operacional](docs/PLANO.md) · [Releases](docs/RELEASES.md) · [Roadmap](ROADMAP.md) · [Mudanças](CHANGELOG.md)
 
-## Estrutura planejada
+## Contribuir
 
-```text
-.
-├── SKILL.md
-├── bin/
-├── scripts/
-├── installers/
-├── adapters/
-├── requirements/
-├── schemas/
-├── templates/
-├── tests/
-├── docs/
-└── .github/workflows/
-```
-
-## Como contribuir
-
-Contribuições serão bem-vindas em:
-
-- novos backends locais;
-- compatibilidade com outras plataformas;
-- testes de instalação limpa e atualização;
-- análise e preparação de áudio;
-- acessibilidade e documentação;
-- segurança, privacidade e prevenção de abuso.
-
-Antes de contribuir, não envie amostras reais de voz, modelos pesados, caches, credenciais ou dados pessoais.
-
-Leia [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código de Conduta](CODE_OF_CONDUCT.md) antes de abrir uma contribuição.
-
-Contato para ideias e dúvidas sobre contribuições: [app@afirma.cc](mailto:app@afirma.cc).
+Bem-vindas: novos backends locais (Linux/NVIDIA, Windows), outros idiomas na documentação, testes, acessibilidade, segurança e prevenção de abuso. Nunca envie amostras reais de voz, modelos, caches ou dados pessoais. Leia [CONTRIBUTING.md](CONTRIBUTING.md) e o [Código de Conduta](CODE_OF_CONDUCT.md). Contato: [app@afirma.cc](mailto:app@afirma.cc).
 
 ## Licença
 
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE). A licença do código não concede direito de usar a voz de terceiros nem substitui consentimento.
+MIT — veja [LICENSE](LICENSE). A licença do código não dá direito de usar a voz de ninguém nem substitui o consentimento. O modelo Qwen3-TTS é Apache 2.0.
 
 ## Créditos
 
-Idealizado por Anderson Oliveira como forma de retribuir à comunidade o conhecimento recebido de amigos, colaboradores e pessoas que compartilham tecnologia de maneira generosa.
+Idealizada e criada por **Mestre Anderson Menezes de Oliveira**, da [Afirma](https://afirma.cc), para devolver à comunidade o conhecimento recebido de amigos, colaboradores e de quem compartilha tecnologia com generosidade. Com o apoio de Bellete Ritter de Oliveira.
 
-Desenvolvido com apoio da Bellete Ritter de Oliveira e construído para evoluir por colaboração.
+Se esta skill te ajudou, dê uma ⭐ e cite: *Clonagem de Voz Local — Mestre Anderson Menezes de Oliveira · afirma.cc*.

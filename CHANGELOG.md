@@ -2,7 +2,28 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
-## Não lançado
+## 0.2.0 — 2026-11-13
+
+Lições da produção real de vídeos narrados com voz clonada (Mestre Anderson Menezes de Oliveira · afirma.cc).
+
+### Adicionado
+
+- filtro de fidelidade vocal (`voice_clone/fidelity.py`): mede tom (F0) e timbre de cada tomada contra a referência; aceita até 1,2 semitom e timbre 4,3;
+- `synthesize --takes N` (padrão 10): gera até N tomadas e grava a mais fiel; status `CONFERIR_FIDELIDADE` quando nenhuma passa;
+- descarte de tomadas com duração implausível (fora de 6–16 caracteres por segundo);
+- dicionário de pronúncia por perfil (`pronunciation.json`) e extra (`--pronunciation`), aplicado só ao texto falado;
+- comando `narrate`: roteiro `.txt` (uma fala por linha) ou `.json` (`text` + `speak`), volume igualado a −20 dB, relatório `narration-report.json` com `to_review` e regravação seletiva `--only`;
+- idioma no perfil (`prepare --language`) e por fala (`--language`);
+- documentação em português, inglês e espanhol; modelos de consentimento em en/es; exemplos de pronúncia e roteiro.
+
+### Mudado
+
+- a transcrição da referência não é mais enviada ao modelo por padrão (`use_reference_transcript: false`): na produção ela causava falas cortadas ou balbucio;
+- amostra com menos de 8 s de voz é recusada;
+- `numpy` passa a ser dependência base;
+- créditos: Mestre Anderson Menezes de Oliveira · Afirma.
+
+## 0.1.0rc2
 
 ### Corrigido em 0.1.0rc2
 
