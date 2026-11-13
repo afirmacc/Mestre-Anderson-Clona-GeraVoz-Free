@@ -25,6 +25,23 @@ class AcquisitionTests(unittest.TestCase):
             self.assertFalse(analyze(short)["ok"])
             self.assertGreater(analyze(good)["snr_db"], 25)
 
+    def test_quiet_voice_gets_volume_advice_not_noise_advice(self) -> None:
+        import wave
+        import numpy as np
+
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "baixa.wav"
+            write_voice(path, 30)
+            with wave.open(str(path), "rb") as handle:
+                params, frames = handle.getparams(), handle.readframes(handle.getnframes())
+            quiet = (np.frombuffer(frames, dtype=np.int16) * 0.04).astype(np.int16)
+            with wave.open(str(path), "wb") as handle:
+                handle.setparams(params)
+                handle.writeframes(quiet.tobytes())
+            text = " ".join(analyze(path)["warnings"])
+            self.assertIn("Voz baixa", text)
+            self.assertNotIn("Desligue ventilador", text)
+
 
 if __name__ == "__main__":
     unittest.main()

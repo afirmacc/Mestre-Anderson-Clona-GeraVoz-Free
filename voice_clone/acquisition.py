@@ -141,14 +141,19 @@ def analyze(path: Path) -> dict:
         warnings.append("Amostra longa (mais de 60 s de voz). 25 a 40 s bastam; o excesso só deixa mais lento.")
     if clipped > 0.1:
         problems.append(f"Áudio estourado ({clipped:.2f}% saturado). Afaste o microfone ou baixe o ganho.")
-    if peak_db < -18:
-        warnings.append("Volume baixo. Aproxime o microfone ou aumente o ganho.")
-    if snr < 15:
+    quiet = speech_db < -30 or peak_db < -18
+    if quiet:
+        warnings.append(f"Voz baixa (nível {speech_db:.0f} dB; o ideal é entre −25 e −12). Chegue o microfone a um palmo "
+                        "da boca ou aumente o volume de entrada em Ajustes do Sistema > Som > Entrada.")
+    if snr < 15 and not quiet:
         problems.append(f"Ruído alto (voz só {snr:.0f} dB acima do fundo). Grave em lugar silencioso.")
-    elif snr < 25:
-        warnings.append(f"Algum ruído de fundo (voz {snr:.0f} dB acima do fundo). Melhor abaixo de −50 dB de fundo.")
+    elif snr < 15:
+        problems.append(f"A voz quase se mistura com o fundo ({snr:.0f} dB). Aumente o volume da voz e grave de novo.")
+    elif snr < 25 and noise_db > -50:
+        warnings.append(f"Ruído de fundo em {noise_db:.0f} dB (melhor abaixo de −50). Desligue ventilador, ar ou TV.")
     if total_seconds and speech_seconds / total_seconds < 0.5:
-        warnings.append("Muito silêncio na gravação. Comece a ler logo e corte as pausas longas.")
+        warnings.append("Pouca fala reconhecida na gravação." + (" Com o volume baixo, parte da voz pode ter passado por "
+                        "silêncio; resolva o volume primeiro." if quiet else " Comece a ler logo e corte as pausas longas."))
     return {
         "file": str(path), "total_seconds": round(total_seconds, 1), "speech_seconds": round(speech_seconds, 1),
         "noise_floor_db": round(noise_db, 1), "speech_level_db": round(speech_db, 1), "snr_db": round(snr, 1),

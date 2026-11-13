@@ -2,6 +2,12 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.3.1 — 2026-11-13
+
+### Corrigido
+
+- análise da amostra: voz gravada baixa (comum no microfone do notebook) agora é apontada como "voz baixa", com a dica de aproximar o microfone ou aumentar o volume de entrada, em vez de um aviso enganoso de ruído de fundo (achado na primeira gravação real).
+
 ## 0.3.0 — 2026-11-13
 
 Falar certo: captação da voz e pronúncia (pedido do Mestre Anderson Menezes de Oliveira após o teste da 0.2.0).
