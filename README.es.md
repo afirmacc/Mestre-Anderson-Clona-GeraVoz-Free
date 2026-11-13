@@ -33,7 +33,7 @@ Funciona como **skill** para **Claude Code, Codex, Hermes, Orca y OpenClaw** (y 
 | Oído más preciso | [Whisper large-v3-turbo MLX](https://huggingface.co/mlx-community/whisper-large-v3-turbo) | ~1,6 GB | Opcional, no probado aquí: `export VOICE_CLONE_LISTEN_MODEL=mlx-community/whisper-large-v3-turbo` |
 | Motor | [MLX 0.32](https://github.com/ml-explore/mlx) + [MLX-Audio 0.4.7](https://github.com/Blaizzy/mlx-audio) | ~1,4 GB (Python y bibliotecas) | Versiones fijadas por el instalador. |
 
-**Computadora:** Mac con Apple Silicon (M1, M2, M3, M4 o más nueva); probado en unan **M2 Pro Mac**. Reserva unos **6 GB de disco** y prefiere **16 GB de memoria** o más. Mac Intel, Windows y Linux aún no son compatibles (ver Compatibilidad).
+**Computadora:** Mac con Apple Silicon (M1, M2, M3, M4 o más nueva); probado en una **Mac M2 Pro**. Reserva unos **6 GB de disco** y prefiere **16 GB de memoria** o más. Mac Intel, Windows y Linux aún no son compatibles (ver Compatibilidad).
 
 **Velocidad medida (M2 Pro):** un guion de 4 frases sale en ~40 s solo con el filtro de tono y en ~2 min con Whisper escuchando cada toma.
 
