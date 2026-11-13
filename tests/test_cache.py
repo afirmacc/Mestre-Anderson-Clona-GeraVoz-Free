@@ -8,12 +8,18 @@ from unittest.mock import patch
 from voice_clone.common import model_cache_path
 
 
+def complete(model: Path) -> None:
+    (model / "snapshots/abc").mkdir(parents=True)
+    (model / "snapshots/abc/model.safetensors").write_bytes(b"pesos")
+    (model / "blobs").mkdir()
+
+
 class CacheTests(unittest.TestCase):
     def test_finds_huggingface_hub_layout(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             expected = root / "hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit"
-            expected.mkdir(parents=True)
+            complete(expected)
             with patch("voice_clone.common.MODEL_CACHE", root):
                 self.assertEqual(model_cache_path(), expected)
 
@@ -21,9 +27,24 @@ class CacheTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             expected = root / "models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit"
-            expected.mkdir()
+            complete(expected)
             with patch("voice_clone.common.MODEL_CACHE", root):
                 self.assertEqual(model_cache_path(), expected)
+
+    def test_half_download_is_not_ready(self) -> None:
+        # Teste real: o download travou no meio e a pasta existir não pode valer como modelo pronto.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            model = root / "hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit"
+            (model / "blobs").mkdir(parents=True)
+            (model / "blobs/abc.incomplete").write_bytes(b"")
+            with patch("voice_clone.common.MODEL_CACHE", root):
+                self.assertIsNone(model_cache_path())
+            complete_dir = model / "snapshots/abc"
+            complete_dir.mkdir(parents=True)
+            (complete_dir / "model.safetensors").write_bytes(b"pesos")
+            with patch("voice_clone.common.MODEL_CACHE", root):
+                self.assertIsNone(model_cache_path())
 
 
 if __name__ == "__main__":

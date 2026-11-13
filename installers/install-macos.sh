@@ -106,24 +106,34 @@ else
   exit 3
 fi
 
+# Modelo completo = pesos presentes e nenhum download pela metade (pasta existir não basta).
+model_ready() {
+  local dir="$1"
+  compgen -G "$dir/snapshots/*/*.safetensors" >/dev/null && ! compgen -G "$dir/blobs/*.incomplete" >/dev/null
+}
+download_model() {
+  # snapshot_download retoma de onde parou. HTTP comum: o download "xet" travou em teste real.
+  HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}" HF_HOME="$MODEL_CACHE" "$VENV/bin/python" -c \
+    "from huggingface_hub import snapshot_download; snapshot_download('$1')"
+}
+
+QWEN_CACHE="$MODEL_CACHE/hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit"
 if [[ "$SKIP_MODEL" -eq 0 ]]; then
-  if [[ -d "$MODEL_CACHE/hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit" || -d "$MODEL_CACHE/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit" ]]; then
+  if model_ready "$QWEN_CACHE"; then
     echo "REUTILIZADO: cache do modelo"
   else
-    confirm "Autoriza baixar aproximadamente 3 GB do modelo oficial?" || exit 4
-    HF_HOME="$MODEL_CACHE" "$VENV/bin/python" - <<'PY'
-from mlx_audio.tts.utils import load_model
-load_model("mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit")
-PY
+    confirm "Autoriza baixar aproximadamente 3 GB do modelo oficial (retoma se já começou)?" || exit 4
+    download_model "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit"
+    model_ready "$QWEN_CACHE" || { echo "BLOQUEADO_VOZ: download do modelo incompleto. Rode o instalador de novo." >&2; exit 3; }
   fi
 fi
 
 WHISPER_CACHE="$MODEL_CACHE/hub/models--mlx-community--whisper-small-mlx"
 if [[ "$SKIP_MODEL" -eq 0 ]]; then
-  if [[ -d "$WHISPER_CACHE" ]]; then
+  if compgen -G "$WHISPER_CACHE/snapshots/*/weights.*" >/dev/null && ! compgen -G "$WHISPER_CACHE/blobs/*.incomplete" >/dev/null; then
     echo "REUTILIZADO: ouvido automático (Whisper small)"
   elif confirm "Autoriza baixar o ouvido automático (Whisper small, ~500 MB) que confere a pronúncia?"; then
-    HF_HOME="$MODEL_CACHE" "$VENV/bin/python" -c 'from huggingface_hub import snapshot_download; snapshot_download("mlx-community/whisper-small-mlx")'
+    download_model "mlx-community/whisper-small-mlx"
   else
     echo "IGNORADO: sem o Whisper a skill não confere a pronúncia de cada tomada."
   fi

@@ -19,9 +19,10 @@ MODEL_CACHE_NAMES = (
 
 
 def model_cache_path() -> Path | None:
+    """Pasta do modelo só se o download estiver completo (pesos presentes, nada pela metade)."""
     for relative in MODEL_CACHE_NAMES:
         candidate = MODEL_CACHE / relative
-        if candidate.is_dir():
+        if candidate.is_dir() and any(candidate.glob("snapshots/*/*.safetensors")) and not any(candidate.glob("blobs/*.incomplete")):
             return candidate
     return None
 
