@@ -2,6 +2,12 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.4.3 — 2026-11-13
+
+### Corrigido
+
+- FFmpeg roda com `-nostdin`: sem isso, gravar ou converter áudio "comia" as respostas do assistente `criar-voz` quando elas vinham por um agente ou por um arquivo.
+
 ## 0.4.2 — 2026-11-13
 
 ### Adicionado

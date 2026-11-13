@@ -176,12 +176,12 @@ def level(source: Path, target: Path, mean_db: float = -20.0) -> dict:
     cut = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03"
     trimmed = target.with_suffix(".trim.wav")
     try:
-        run(["ffmpeg", "-v", "error", "-y", "-i", str(source), "-af", f"{cut},areverse,{cut},areverse", str(trimmed)])
-        stats = run(["ffmpeg", "-hide_banner", "-i", str(trimmed), "-af", "volumedetect", "-f", "null", "-"]).stderr
+        run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(source), "-af", f"{cut},areverse,{cut},areverse", str(trimmed)])
+        stats = run(["ffmpeg", "-nostdin", "-hide_banner", "-i", str(trimmed), "-af", "volumedetect", "-f", "null", "-"]).stderr
         current = float(re.search(r"mean_volume: (-?[\d.]+) dB", stats).group(1))
         seconds = probe(trimmed)["duration_seconds"]
         gain = mean_db - current
-        run(["ffmpeg", "-v", "error", "-y", "-i", str(trimmed), "-af",
+        run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(trimmed), "-af",
              f"volume={gain:.2f}dB,afade=t=in:d=0.02,afade=t=out:st={max(0.0, seconds - 0.06):.3f}:d=0.06,"
              "alimiter=limit=0.89:level=disabled", "-c:a", "pcm_s16le", str(target)])
     except (FileNotFoundError, subprocess.CalledProcessError, AttributeError) as exc:
@@ -282,7 +282,7 @@ def _join(files: list[Path], target: Path, subprocess) -> None:
         labels.append(f"[{index}:a]apad=pad_dur=0.6[a{index}]")
     graph = ";".join(labels) + ";" + "".join(f"[a{i}]" for i in range(len(files))) + f"concat=n={len(files)}:v=0:a=1"
     try:
-        subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", graph, "-c:a", "pcm_s16le", str(target)],
+        subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-y", *inputs, "-filter_complex", graph, "-c:a", "pcm_s16le", str(target)],
                        check=True, capture_output=True, text=True)
     except (FileNotFoundError, subprocess.CalledProcessError) as exc:
         raise VoiceCloneError("FFmpeg não conseguiu juntar as falas.") from exc

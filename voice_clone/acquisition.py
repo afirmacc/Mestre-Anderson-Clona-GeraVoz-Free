@@ -75,7 +75,7 @@ def guide(language: str | None = None) -> dict:
 
 
 def _capture(output: Path, seconds: int, device: str) -> None:
-    command = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "avfoundation", "-i", device,
+    command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-f", "avfoundation", "-i", device,
                "-t", str(seconds), "-ac", "1", "-ar", "48000", "-c:a", "pcm_s16le", str(output)]
     try:
         subprocess.run(command, check=True)

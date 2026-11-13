@@ -29,7 +29,7 @@ def prepare_audio(source: Path, profile_dir: Path, profile_id: str, consent: Pat
     edges = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.2"
 
     def ffmpeg(arguments: list[str], target: Path) -> None:
-        command = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(source), "-vn", "-ac", "1",
+        command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", str(source), "-vn", "-ac", "1",
                    "-ar", "24000", *arguments, "-c:a", "pcm_s16le", str(target)]
         try:
             subprocess.run(command, check=True, capture_output=True, text=True)
