@@ -2,7 +2,7 @@
 
 [Português](README.md) · **English** · [Español](README.es.md)
 
-![version](https://img.shields.io/badge/version-0.5.0-blue)
+![version](https://img.shields.io/badge/version-0.5.2-blue)
 ![IA local](https://img.shields.io/badge/AI-100%25%20LOCAL-success)
 ![grátis](https://img.shields.io/badge/cost-0%20%24-success)
 ![Agentes](https://img.shields.io/badge/agents-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes%20%C2%B7%20Orca%20%C2%B7%20OpenClaw-6f42c1)
@@ -23,6 +23,21 @@ It works as a **skill** for **Claude Code, Codex, Hermes, Orca and OpenClaw** (a
 | Cost | Free (MIT code, Apache 2.0 model) | Subscription or per character |
 | API key / account | Not needed | Required |
 | Works offline | Yes, once installed | No |
+
+## Recommended local AIs (what was tested)
+
+| Role | Local AI | Size | Status |
+|---|---|---|---|
+| **Voice** (clones and speaks) | [Qwen3-TTS 12Hz 1.7B Base, 8-bit, MLX](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit) | ~2.9 GB | **Recommended, used in production.** Installer default. |
+| **Listener** (checks pronunciation) | [Whisper small MLX](https://huggingface.co/mlx-community/whisper-small-mlx) | ~0.9 GB | **Recommended.** Default. |
+| More accurate listener | [Whisper large-v3-turbo MLX](https://huggingface.co/mlx-community/whisper-large-v3-turbo) | ~1.6 GB | Optional, not tested here: `export VOICE_CLONE_LISTEN_MODEL=mlx-community/whisper-large-v3-turbo` |
+| Engine | [MLX 0.32](https://github.com/ml-explore/mlx) + [MLX-Audio 0.4.7](https://github.com/Blaizzy/mlx-audio) | ~1.4 GB (Python and libraries) | Versions pinned by the installer. |
+
+**Computer:** a Mac with Apple Silicon (M1, M2, M3, M4 or newer); tested on an **M2 Pro Mac**. Keep about **6 GB of disk** free and prefer **16 GB of memory** or more. Intel Macs, Windows and Linux are not supported yet (see Compatibility).
+
+**Measured speed (M2 Pro):** a 4-line script takes ~40 s with the pitch filter only, and ~2 min with Whisper listening to every take.
+
+**What about the agent?** The agent (Claude Code, Codex, Hermes, Orca, OpenClaw) only drives the work: the local AIs above generate and listen to the voice, and the audio never goes to the agent or the cloud. For a 100% offline setup you can use an agent with a local language model (for example OpenClaw or Hermes with Ollama), but that has not been tested with this skill yet.
 
 ## Use it in your agent
 

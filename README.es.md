@@ -2,7 +2,7 @@
 
 [Português](README.md) · [English](README.en.md) · **Español**
 
-![version](https://img.shields.io/badge/versi%C3%B3n-0.5.0-blue)
+![version](https://img.shields.io/badge/versi%C3%B3n-0.5.2-blue)
 ![IA local](https://img.shields.io/badge/IA-100%25%20LOCAL-success)
 ![grátis](https://img.shields.io/badge/costo-0%20%24-success)
 ![Agentes](https://img.shields.io/badge/agentes-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes%20%C2%B7%20Orca%20%C2%B7%20OpenClaw-6f42c1)
@@ -23,6 +23,21 @@ Funciona como **skill** para **Claude Code, Codex, Hermes, Orca y OpenClaw** (y 
 | Costo | Gratis (código MIT, modelo Apache 2.0) | Suscripción o por carácter |
 | Clave de API / cuenta | No hace falta | Obligatoria |
 | Funciona sin internet | Sí, una vez instalada | No |
+
+## IAs locales recomendadas (lo que se probó)
+
+| Función | IA local | Tamaño | Estado |
+|---|---|---|---|
+| **Voz** (clona y habla) | [Qwen3-TTS 12Hz 1.7B Base, 8 bits, MLX](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit) | ~2,9 GB | **Recomendado y usado en producción.** Es el predeterminado del instalador. |
+| **Oído** (revisa la pronunciación) | [Whisper small MLX](https://huggingface.co/mlx-community/whisper-small-mlx) | ~0,9 GB | **Recomendado.** Es el predeterminado. |
+| Oído más preciso | [Whisper large-v3-turbo MLX](https://huggingface.co/mlx-community/whisper-large-v3-turbo) | ~1,6 GB | Opcional, no probado aquí: `export VOICE_CLONE_LISTEN_MODEL=mlx-community/whisper-large-v3-turbo` |
+| Motor | [MLX 0.32](https://github.com/ml-explore/mlx) + [MLX-Audio 0.4.7](https://github.com/Blaizzy/mlx-audio) | ~1,4 GB (Python y bibliotecas) | Versiones fijadas por el instalador. |
+
+**Computadora:** Mac con Apple Silicon (M1, M2, M3, M4 o más nueva); probado en unan **M2 Pro Mac**. Reserva unos **6 GB de disco** y prefiere **16 GB de memoria** o más. Mac Intel, Windows y Linux aún no son compatibles (ver Compatibilidad).
+
+**Velocidad medida (M2 Pro):** un guion de 4 frases sale en ~40 s solo con el filtro de tono y en ~2 min con Whisper escuchando cada toma.
+
+**¿Y el agente?** El agente (Claude Code, Codex, Hermes, Orca, OpenClaw) solo conduce el trabajo: las IAs locales de arriba generan y escuchan la voz, y el audio nunca va al agente ni a la nube. Para trabajar 100% sin internet puedes usar un agente con modelo de lenguaje local (por ejemplo OpenClaw o Hermes con Ollama), pero eso todavía no se probó con esta skill.
 
 ## Úsala en tu agente
 

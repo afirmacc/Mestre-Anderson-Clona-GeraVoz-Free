@@ -1,7 +1,7 @@
 ---
 name: mestre-anderson-clona-geravoz-free
 description: "Mestre Anderson Clona GeraVoz Free: clona uma voz autorizada e gera narração com IA 100% LOCAL e grátis, no próprio computador (Qwen3-TTS + MLX, Apple Silicon; nada vai para a nuvem, sem chave de API). Narra roteiros, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
-version: 0.5.1
+version: 0.5.2
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
@@ -19,6 +19,13 @@ Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma
 - Nunca usar fallback nem trocar a engine em silêncio. Se falhar, parar e dizer.
 - A automação mede voz e pronúncia; **a aprovação final é humana**.
 - Áudio sintético não pode ser usado para enganar (fraude, se passar por alguém, burlar autenticação por voz).
+
+## IAs locais recomendadas
+
+- Voz: **Qwen3-TTS 12Hz 1.7B Base 8bit (MLX)**, ~2,9 GB, padrão e usado em produção.
+- Ouvido: **Whisper small MLX**, ~0,9 GB, padrão; o large-v3-turbo é opcional (`VOICE_CLONE_LISTEN_MODEL`), não testado.
+- Mac Apple Silicon (testado no M2 Pro), ~6 GB de disco, 16 GB de memória recomendados.
+- O agente só conduz o trabalho; o áudio nunca sai do computador.
 
 ## Primeiro uso (baixou a skill, quer a voz funcionando)
 

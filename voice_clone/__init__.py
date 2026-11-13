@@ -3,4 +3,4 @@
 Criado por Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc).
 """
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"

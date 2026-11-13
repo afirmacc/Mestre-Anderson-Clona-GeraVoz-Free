@@ -2,6 +2,12 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.5.2 — 2026-11-13
+
+### Documentado
+
+- seção "IAs locais recomendadas" (pt, en, es): Qwen3-TTS 1.7B Base 8bit MLX (voz), Whisper small MLX (ouvido), large-v3-turbo opcional, MLX/MLX-Audio, computador recomendado, disco, memória e velocidade medida no M2 Pro; papel do agente.
+
 ## 0.5.1 — 2026-11-13
 
 ### Documentado
