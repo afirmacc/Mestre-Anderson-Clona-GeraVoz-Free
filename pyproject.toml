@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.4.1"
+version = "0.4.2"
 description = "Clonagem local e autorizada de voz para agentes de IA: captação guiada, pronúncia certa (dicionários, escuta e aprendizado), fidelidade de tom, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
 readme = "README.md"
 requires-python = ">=3.10"

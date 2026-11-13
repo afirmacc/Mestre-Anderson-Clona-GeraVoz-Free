@@ -46,6 +46,18 @@ class CacheTests(unittest.TestCase):
             with patch("voice_clone.common.MODEL_CACHE", root):
                 self.assertIsNone(model_cache_path())
 
+    def test_local_model_dir_wins(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            local = root / "modelo"
+            local.mkdir()
+            (local / "config.json").write_text("{}")
+            (local / "model.safetensors").write_bytes(b"pesos")
+            (root / "model-dir").write_text(str(local))
+            with patch("voice_clone.common.LOCAL_MODEL_FILE", root / "model-dir"), \
+                 patch("voice_clone.common.MODEL_CACHE", root / "cache"):
+                self.assertEqual(model_cache_path(), local)
+
 
 if __name__ == "__main__":
     unittest.main()

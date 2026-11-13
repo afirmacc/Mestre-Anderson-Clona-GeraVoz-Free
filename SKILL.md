@@ -1,7 +1,7 @@
 ---
 name: clonar-voz-local
 description: "Clona uma voz autorizada no próprio computador (Qwen3-TTS + MLX, Apple Silicon) e narra roteiros com ela, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
-version: 0.4.1
+version: 0.4.2
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
@@ -20,7 +20,7 @@ Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma
 
 ## Primeiro uso (baixou a skill, quer a voz funcionando)
 
-1. `command -v voice-clone`. Se não existir, rode o instalador que vem com a skill: `bash <pasta da skill>/installers/install-macos.sh` (pede confirmação antes de instalar algo ou baixar o modelo; segunda execução só revalida; cria o comando `voice-clone`).
+1. `command -v voice-clone`. Se não existir, rode o instalador que vem com a skill: `bash <pasta da skill>/installers/install-macos.sh` (pede confirmação antes de instalar algo ou baixar o modelo; segunda execução só revalida; cria o comando `voice-clone`). Se o computador já tem o Qwen3-TTS 1.7B Base 8bit baixado, use `--model-dir=<pasta>` e não baixa de novo.
 2. Peça à pessoa para rodar **no terminal dela** (precisa do microfone e de respostas): `voice-clone criar-voz`. O assistente faz tudo: consentimento (a pessoa digita AUTORIZO), teste de volume de 5 s, leitura guiada, análise com regravação até ficar boa, perfil, frase de teste tocada na hora e aprovação. Nunca grave nem aprove no lugar da pessoa.
 3. Já tem uma gravação boa? `voice-clone criar-voz --input gravacao.wav`.
 4. Pronto: `voice-clone narrate --profile ~/.local/share/voice-clone/profiles/<perfil> --script roteiro.txt --output-dir narracao/`.

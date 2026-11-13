@@ -18,8 +18,25 @@ MODEL_CACHE_NAMES = (
 )
 
 
+DEFAULT_MODEL = "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit"
+LOCAL_MODEL_FILE = APP_DIR / "model-dir"
+
+
+def local_model_dir() -> Path | None:
+    """Modelo já existente no computador, indicado no instalador com --model-dir (evita baixar 3 GB de novo)."""
+    if not LOCAL_MODEL_FILE.is_file():
+        return None
+    folder = Path(LOCAL_MODEL_FILE.read_text(encoding="utf-8").strip()).expanduser()
+    if (folder / "config.json").is_file() and any(folder.glob("*.safetensors")):
+        return folder
+    return None
+
+
 def model_cache_path() -> Path | None:
     """Pasta do modelo só se o download estiver completo (pesos presentes, nada pela metade)."""
+    local = local_model_dir()
+    if local:
+        return local
     for relative in MODEL_CACHE_NAMES:
         candidate = MODEL_CACHE / relative
         if candidate.is_dir() and any(candidate.glob("snapshots/*/*.safetensors")) and not any(candidate.glob("blobs/*.incomplete")):

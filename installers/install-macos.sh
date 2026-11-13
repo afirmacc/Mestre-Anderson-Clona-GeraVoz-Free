@@ -5,12 +5,15 @@ REPAIR=0
 YES=0
 SKIP_MODEL=0
 SMOKE_PROFILE=""
+MODEL_DIR=""
 for arg in "$@"; do
   case "$arg" in
     --repair) REPAIR=1 ;;
     --yes) YES=1 ;;
     --skip-model) SKIP_MODEL=1 ;;
+    --help|-h) echo "Uso: install-macos.sh [--yes] [--repair] [--skip-model] [--model-dir=PASTA] [--smoke-profile=PERFIL]"; exit 0 ;;
     --smoke-profile=*) SMOKE_PROFILE="${arg#*=}" ;;
+    --model-dir=*) MODEL_DIR="${arg#*=}" ;;
     *) echo "Argumento desconhecido: $arg" >&2; exit 2 ;;
   esac
 done
@@ -118,7 +121,25 @@ download_model() {
 }
 
 QWEN_CACHE="$MODEL_CACHE/hub/models--mlx-community--Qwen3-TTS-12Hz-1.7B-Base-8bit"
-if [[ "$SKIP_MODEL" -eq 0 ]]; then
+if [[ -n "$MODEL_DIR" ]]; then
+  MODEL_DIR="$(cd -P "$MODEL_DIR" 2>/dev/null && pwd || true)"
+  if [[ -n "$MODEL_DIR" && -f "$MODEL_DIR/config.json" ]] && compgen -G "$MODEL_DIR/*.safetensors" >/dev/null; then
+    printf '%s\n' "$MODEL_DIR" > "$APP_DIR/model-dir"
+    echo "REUTILIZADO: modelo já existente em $MODEL_DIR (sem download)"
+  else
+    echo "BLOQUEADO_VOZ: --model-dir não tem config.json e *.safetensors do Qwen3-TTS." >&2
+    exit 3
+  fi
+fi
+LOCAL_MODEL=""
+if [[ -f "$APP_DIR/model-dir" ]]; then
+  LOCAL_MODEL="$(cat "$APP_DIR/model-dir")"
+  if [[ ! -f "$LOCAL_MODEL/config.json" ]] || ! compgen -G "$LOCAL_MODEL/*.safetensors" >/dev/null; then
+    echo "ATENÇÃO: o modelo indicado antes ($LOCAL_MODEL) sumiu; volto a usar o download."
+    rm -f "$APP_DIR/model-dir"; LOCAL_MODEL=""
+  fi
+fi
+if [[ "$SKIP_MODEL" -eq 0 && -z "$LOCAL_MODEL" ]]; then
   if model_ready "$QWEN_CACHE"; then
     echo "REUTILIZADO: cache do modelo"
   else
@@ -129,6 +150,12 @@ if [[ "$SKIP_MODEL" -eq 0 ]]; then
 fi
 
 WHISPER_CACHE="$MODEL_CACHE/hub/models--mlx-community--whisper-small-mlx"
+SHARED_WHISPER="$HOME/.cache/huggingface/hub/models--mlx-community--whisper-small-mlx"
+if [[ ! -e "$WHISPER_CACHE" && -d "$SHARED_WHISPER" ]] && compgen -G "$SHARED_WHISPER/snapshots/*/weights.*" >/dev/null; then
+  mkdir -p "$MODEL_CACHE/hub"
+  ln -s "$SHARED_WHISPER" "$WHISPER_CACHE"
+  echo "REUTILIZADO: Whisper small que já estava no computador (~/.cache/huggingface)"
+fi
 if [[ "$SKIP_MODEL" -eq 0 ]]; then
   if compgen -G "$WHISPER_CACHE/snapshots/*/weights.*" >/dev/null && ! compgen -G "$WHISPER_CACHE/blobs/*.incomplete" >/dev/null; then
     echo "REUTILIZADO: ouvido automático (Whisper small)"
@@ -204,7 +231,9 @@ if [[ "$SKIP_MODEL" -eq 0 ]]; then
   echo "Executando smoke test técnico..."
   HF_HOME="$MODEL_CACHE" VOICE_CLONE_HOME="$APP_DIR" "$VENV/bin/python" - <<'PY'
 from mlx_audio.tts.utils import load_model
-load_model("mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit")
+from voice_clone.common import DEFAULT_MODEL, local_model_dir
+local = local_model_dir()
+load_model(str(local) if local else DEFAULT_MODEL)
 print("SMOKE OK: backend e modelo carregados")
 PY
 

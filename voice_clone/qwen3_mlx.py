@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import os
 
-from .common import MODEL_CACHE, VoiceCloneError
+from .common import DEFAULT_MODEL, MODEL_CACHE, VoiceCloneError, local_model_dir
 
 # Janela de duração plausível para o texto, em caracteres por segundo. Fora dela a tomada
 # foi cortada (curta demais) ou o modelo balbuciou/repetiu (longa demais).
@@ -20,7 +20,8 @@ def _load(model_id: str):
     except ImportError as exc:
         raise VoiceCloneError("Backend MLX ausente. Execute voice-clone install.") from exc
     if model_id not in _MODEL_CACHE:
-        _MODEL_CACHE[model_id] = load_model(model_id)
+        local = local_model_dir() if model_id == DEFAULT_MODEL else None
+        _MODEL_CACHE[model_id] = load_model(str(local) if local else model_id)
     return _MODEL_CACHE[model_id]
 
 

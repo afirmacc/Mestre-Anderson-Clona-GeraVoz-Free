@@ -2,6 +2,14 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.4.2 — 2026-11-13
+
+### Adicionado
+
+- instalador `--model-dir=PASTA`: reaproveita um Qwen3-TTS que já está no computador (sem baixar 3 GB); na instalação real o download do Hugging Face estava em ~80 KB/s;
+- instalador reaproveita o Whisper small que já estiver em `~/.cache/huggingface`;
+- `--help` no instalador.
+
 ## 0.4.1 — 2026-11-13
 
 ### Corrigido

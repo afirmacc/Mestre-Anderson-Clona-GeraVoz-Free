@@ -21,6 +21,8 @@ npx skills add afirmacc/ia-skill-clonagem-voz
 # 2. Install the tool (macOS Apple Silicon). Asks before downloading the model (~3 GB).
 git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
 
+# (Already have the Qwen3-TTS 1.7B Base 8bit model? Add --model-dir=<folder> to skip the download.)
+
 # 3. Create your voice: the assistant guides everything and plays the result at the end
 voice-clone create-voice --language en
 ```
