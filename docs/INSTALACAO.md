@@ -86,4 +86,4 @@ O estado máximo automático é `AGUARDA_QA_HUMANO`. Só uma pessoa autorizada p
 
 ## Hermes
 
-Copie ou vincule a pasta do projeto para `~/.hermes/skills/local/clonar-voz-local`, abra uma nova sessão ou use `/reset`, e confira com `hermes skills list`. O executor funciona independentemente do carregamento da skill pelo Hermes.
+Copie ou vincule a pasta do projeto para `~/.hermes/skills/local/mestre-anderson-clona-geravoz-free`, abra uma nova sessão ou use `/reset`, e confira com `hermes skills list`. O executor funciona independentemente do carregamento da skill pelo Hermes.

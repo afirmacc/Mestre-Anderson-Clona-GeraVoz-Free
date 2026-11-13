@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://afirmacc.github.io/ia-skill-clonagem-voz/profile.schema.json",
+  "$id": "https://afirmacc.github.io/Mestre-Anderson-Clona-GeraVoz-Free/profile.schema.json",
   "title": "Voice profile",
   "type": "object",
   "required": ["schema_version", "profile_id", "engine", "model", "reference", "reference_sha256", "consent_file", "consent_sha256", "status"],

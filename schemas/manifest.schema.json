@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://afirmacc.github.io/ia-skill-clonagem-voz/manifest.schema.json",
+  "$id": "https://afirmacc.github.io/Mestre-Anderson-Clona-GeraVoz-Free/manifest.schema.json",
   "title": "Voice generation manifest",
   "type": "object",
   "required": ["schema_version", "profile_id", "engine", "model", "output_sha256", "fallback_used", "status"],

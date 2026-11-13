@@ -1,25 +1,48 @@
-# IA Skill — Clonación de Voz Local
+# Mestre Anderson Clona GeraVoz Free
 
 [Português](README.md) · [English](README.en.md) · **Español**
 
-![versión](https://img.shields.io/badge/versi%C3%B3n-0.4.0-blue)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
-![local](https://img.shields.io/badge/procesamiento-100%25%20local-success)
+![version](https://img.shields.io/badge/versi%C3%B3n-0.5.0-blue)
+![IA local](https://img.shields.io/badge/IA-100%25%20LOCAL-success)
+![grátis](https://img.shields.io/badge/costo-0%20%24-success)
+![Agentes](https://img.shields.io/badge/agentes-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes%20%C2%B7%20Orca%20%C2%B7%20OpenClaw-6f42c1)
 
-Clona **tu propia voz** en tu computadora y narra guiones completos con ella — sin ElevenLabs, sin pagar por carácter y sin enviar tu voz a ningún servicio. Funciona como **skill para agentes de IA** (Claude Code, Codex, Hermes y otros) y como herramienta de línea de comandos.
+**Clona tu voz y genera narraciones con ella usando IA 100% LOCAL, gratis.** El modelo de voz (Qwen3-TTS) y el oído automático (Whisper) corren **en tu propia computadora**: sin nube, sin clave de API, sin pagar por carácter, y tu voz **nunca sale de tu máquina**. Una vez instalada, funciona incluso sin internet.
+
+Funciona como **skill** para **Claude Code, Codex, Hermes, Orca y OpenClaw** (y cualquier agente que lea `SKILL.md`), y como herramienta de línea de comandos.
 
 > Creada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
 > Nació de una producción real: los videos de la app *Combinado em Família*, narrados con la voz del autor. Cada configuración de esta skill viene de un error que realmente ocurrió.
 
+## Qué significa "IA local" aquí
+
+| | Esta skill | Servicios de voz en la nube |
+|---|---|---|
+| Dónde se procesa tu voz | En tu Mac (GPU Apple Silicon) | En los servidores de la empresa |
+| ¿Tu grabación sale de la computadora? | Nunca | Sí, se sube |
+| Costo | Gratis (código MIT, modelo Apache 2.0) | Suscripción o por carácter |
+| Clave de API / cuenta | No hace falta | Obligatoria |
+| Funciona sin internet | Sí, una vez instalada | No |
+
+## Úsala en tu agente
+
+```bash
+# Claude Code, Codex, Hermes y OpenClaw a la vez (instalación de usuario)
+npx skills add afirmacc/Mestre-Anderson-Clona-GeraVoz-Free -g -a claude-code -a codex -a hermes-agent -a openclaw
+```
+
+- **Orca:** Orca ejecuta Claude Code y Codex por dentro y usa las mismas skills; basta con instalarla para ellos.
+- **Otro agente:** copia la carpeta del repositorio en su carpeta de skills; lo que cuenta es el `SKILL.md`.
+- Luego pide: *"crea mi voz"* o *"narra este guion con mi voz"*.
+
 ## Empieza en 3 pasos
 
 ```bash
-# 1. Descarga la skill (Claude Code, Codex, Hermes…)
-npx skills add afirmacc/ia-skill-clonagem-voz
+# 1. Descarga la skill (Claude Code, Codex, Hermes, Orca, OpenClaw…)
+npx skills add afirmacc/Mestre-Anderson-Clona-GeraVoz-Free
 
 # 2. Instala la herramienta (macOS Apple Silicon). Pregunta antes de descargar el modelo (~3 GB).
-git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
+git clone https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free.git && ./Mestre-Anderson-Clona-GeraVoz-Free/installers/install-macos.sh
 
 # (¿Ya tienes el modelo Qwen3-TTS 1.7B Base 8bit? Agrega --model-dir=<carpeta> y no se descarga de nuevo.)
 
@@ -131,4 +154,4 @@ MIT — ver [LICENSE](LICENSE). La licencia del código no da derecho a usar la 
 
 Ideada y creada por **Mestre Anderson Menezes de Oliveira**, de [Afirma](https://afirma.cc), para devolver a la comunidad el conocimiento recibido de amigos, colaboradores y de quienes comparten tecnología con generosidad. Con el apoyo de Bellete Ritter de Oliveira.
 
-Si esta skill te ayudó, deja una ⭐ y cita: *Clonación de Voz Local — Mestre Anderson Menezes de Oliveira · afirma.cc*.
+Si esta skill te ayudó, deja una ⭐ y cita: *Mestre Anderson Clona GeraVoz Free — Mestre Anderson Menezes de Oliveira · afirma.cc*.

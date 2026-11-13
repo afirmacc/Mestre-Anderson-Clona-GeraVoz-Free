@@ -18,7 +18,7 @@ class StatusTests(unittest.TestCase):
         cache.return_value = Path("/cache/model")
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            skill = root / "clonar-voz-local"
+            skill = root / "mestre-anderson-clona-geravoz-free"
             skill.mkdir()
             (skill / "SKILL.md").write_text("skill")
             with patch.dict("os.environ", {"HERMES_SKILLS_DIR": temp}):

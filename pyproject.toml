@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ia-skill-clonagem-voz"
-version = "0.4.3"
-description = "Clonagem local e autorizada de voz para agentes de IA: captação guiada, pronúncia certa (dicionários, escuta e aprendizado), fidelidade de tom, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
+version = "0.5.0"
+description = "Mestre Anderson Clona GeraVoz Free — clonagem local e autorizada de voz para agentes de IA: captação guiada, pronúncia certa (dicionários, escuta e aprendizado), fidelidade de tom, narração de roteiros. Por Mestre Anderson Menezes de Oliveira · afirma.cc"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Mestre Anderson Menezes de Oliveira", email = "app@afirma.cc" }]
 maintainers = [{ name = "Afirma", email = "app@afirma.cc" }]
-keywords = ["voice-cloning", "tts", "qwen3-tts", "mlx", "agent-skill", "claude", "codex", "hermes", "narration", "clonagem-de-voz"]
+keywords = ["voice-cloning", "tts", "qwen3-tts", "mlx", "agent-skill", "claude", "codex", "hermes", "orca", "openclaw", "local-ai", "narration", "clonagem-de-voz"]
 dependencies = ["numpy>=1.26,<3"]
 license = "MIT"
 license-files = ["LICENSE"]
@@ -24,9 +24,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/afirmacc/ia-skill-clonagem-voz"
+Homepage = "https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free"
 Afirma = "https://afirma.cc"
-Issues = "https://github.com/afirmacc/ia-skill-clonagem-voz/issues"
+Issues = "https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free/issues"
 
 [project.scripts]
 voice-clone = "voice_clone.cli:main"

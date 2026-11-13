@@ -2,6 +2,16 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.5.0 — 2026-11-13
+
+**Novo nome: Mestre Anderson Clona GeraVoz Free** (antes `ia-skill-clonagem-voz`). O endereço antigo no GitHub redireciona.
+
+### Mudado
+
+- nome da skill: `mestre-anderson-clona-geravoz-free` (antes `clonar-voz-local`); o instalador troca o vínculo antigo do Hermes sozinho;
+- documentação deixa claro que é **IA 100% local e grátis** (tabela local x nuvem) e mostra a instalação para Claude Code, Codex, Hermes, Orca e OpenClaw;
+- teste de volume mede o ruído em 2 s de silêncio antes da fala: medir no meio da fala deu alarme falso de "ruído alto" na gravação real.
+
 ## 0.4.3 — 2026-11-13
 
 ### Corrigido

@@ -1,12 +1,14 @@
 ---
-name: clonar-voz-local
-description: "Clona uma voz autorizada no próprio computador (Qwen3-TTS + MLX, Apple Silicon) e narra roteiros com ela, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
-version: 0.4.3
+name: mestre-anderson-clona-geravoz-free
+description: "Mestre Anderson Clona GeraVoz Free: clona uma voz autorizada e gera narração com IA 100% LOCAL e grátis, no próprio computador (Qwen3-TTS + MLX, Apple Silicon; nada vai para a nuvem, sem chave de API). Narra roteiros, falando certo: captação guiada da amostra, dicionário de pronúncia por idioma, números/siglas/sites por extenso, escuta automática de cada tomada (Whisper) e aprendizado da grafia certa de palavras difíceis na sua voz. Filtro de tom, volume igual, sem fallback, consentimento obrigatório. Use quando pedirem narração com a própria voz, voz clonada local, locução de vídeo sem ElevenLabs, ou clone de voz em português, inglês ou espanhol. Local voice cloning and script narration with your own consented voice."
+version: 0.5.0
 author: "Mestre Anderson Menezes de Oliveira · Afirma (https://afirma.cc)"
 license: MIT
 ---
 
-# Clonar voz local
+# Mestre Anderson Clona GeraVoz Free
+
+IA 100% local: o modelo de voz e o Whisper rodam no computador da pessoa; nenhum áudio vai para a nuvem e não há chave de API. Serve para Claude Code, Codex, Hermes, Orca, OpenClaw e qualquer agente que leia `SKILL.md`.
 
 Criada por **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc). Nasceu da produção real de vídeos narrados com a voz do autor; cada regra abaixo veio de um erro que aconteceu de verdade.
 

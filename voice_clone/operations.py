@@ -44,7 +44,7 @@ def status() -> dict:
         "state_file": str(STATE_FILE) if STATE_FILE.is_file() else None,
     }
     hermes_root = Path(os.environ.get("HERMES_SKILLS_DIR", Path.home() / ".hermes/skills/local"))
-    hermes_target = hermes_root / "clonar-voz-local"
+    hermes_target = hermes_root / "mestre-anderson-clona-geravoz-free"
     components["hermes_skill"] = str(hermes_target.resolve()) if (hermes_target / "SKILL.md").is_file() else None
     expected = {"mlx": "0.32.0", "mlx_audio": "0.4.7"}
     valid = platform.system() == "Darwin" and platform.machine() == "arm64"

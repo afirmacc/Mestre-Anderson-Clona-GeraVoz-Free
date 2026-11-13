@@ -40,7 +40,8 @@ else
   fi
 fi
 HERMES_SKILLS_DIR="${HERMES_SKILLS_DIR:-$HOME/.hermes/skills/local}"
-HERMES_TARGET="$HERMES_SKILLS_DIR/clonar-voz-local"
+SK_NAME="mestre-anderson-clona-geravoz-free"
+HERMES_TARGET="$HERMES_SKILLS_DIR/$SK_NAME"
 
 confirm() {
   if [[ "$YES" -eq 1 ]]; then return 0; fi
@@ -204,6 +205,12 @@ write_json(Path("$STATE"), {
 PY
 
 mkdir -p "$HERMES_SKILLS_DIR"
+# Nome antigo da skill (até a 0.4): troca o vínculo pelo nome novo.
+OLD_HERMES="$HERMES_SKILLS_DIR/clonar-voz-local"
+if [[ -L "$OLD_HERMES" && -n "$PROJECT_DIR" && "$(cd -P "$OLD_HERMES" 2>/dev/null && pwd)" == "$PROJECT_DIR" ]]; then
+  rm "$OLD_HERMES"
+  echo "ATUALIZADO: vínculo Hermes renomeado para $SK_NAME"
+fi
 if [[ -n "$PROJECT_DIR" && -L "$HERMES_TARGET" && "$(cd -P "$HERMES_TARGET" && pwd)" == "$PROJECT_DIR" ]]; then
   echo "REUTILIZADO: integração Hermes"
 elif [[ -e "$HERMES_TARGET" || -L "$HERMES_TARGET" ]]; then

@@ -1,25 +1,48 @@
-# AI Skill — Local Voice Cloning
+# Mestre Anderson Clona GeraVoz Free
 
 [Português](README.md) · **English** · [Español](README.es.md)
 
-![version](https://img.shields.io/badge/version-0.4.0-blue)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Agent Skill](https://img.shields.io/badge/Agent%20Skill-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes-6f42c1)
-![local](https://img.shields.io/badge/processing-100%25%20local-success)
+![version](https://img.shields.io/badge/version-0.5.0-blue)
+![IA local](https://img.shields.io/badge/AI-100%25%20LOCAL-success)
+![grátis](https://img.shields.io/badge/cost-0%20%24-success)
+![Agentes](https://img.shields.io/badge/agents-Claude%20%C2%B7%20Codex%20%C2%B7%20Hermes%20%C2%B7%20Orca%20%C2%B7%20OpenClaw-6f42c1)
 
-Clone **your own voice** on your computer and narrate whole scripts with it — no ElevenLabs, no per-character billing, and your voice never leaves your machine. It works as a **skill for AI agents** (Claude Code, Codex, Hermes and others) and as a command-line tool.
+**Clone your voice and generate narration with it using 100% LOCAL AI, for free.** The voice model (Qwen3-TTS) and the automatic listener (Whisper) run **on your own computer**: no cloud, no API key, no per-character fees, and your voice **never leaves your machine**. Once installed, it even works offline.
+
+It works as a **skill** for **Claude Code, Codex, Hermes, Orca and OpenClaw** (and any agent that reads `SKILL.md`), and as a command-line tool.
 
 > Created by **Mestre Anderson Menezes de Oliveira** · [afirma.cc](https://afirma.cc)
-> Born from real production work: the videos of the *Combinado em Família* app, narrated with the author's own voice. Every default in this skill comes from a mistake that actually happened.
+> Born from real production: the videos of the *Combinado em Família* app, narrated with the author's own voice. Every default in this skill comes from a mistake that actually happened.
+
+## What "local AI" means here
+
+| | This skill | Cloud voice services |
+|---|---|---|
+| Where your voice is processed | On your Mac (Apple Silicon GPU) | On the company's servers |
+| Does your recording leave the computer? | Never | Yes, it is uploaded |
+| Cost | Free (MIT code, Apache 2.0 model) | Subscription or per character |
+| API key / account | Not needed | Required |
+| Works offline | Yes, once installed | No |
+
+## Use it in your agent
+
+```bash
+# Claude Code, Codex, Hermes and OpenClaw at once (user-level install)
+npx skills add afirmacc/Mestre-Anderson-Clona-GeraVoz-Free -g -a claude-code -a codex -a hermes-agent -a openclaw
+```
+
+- **Orca:** Orca runs Claude Code and Codex inside and uses the same skills; installing for them is enough.
+- **Another agent:** copy the repository folder into its skills folder; what matters is `SKILL.md`.
+- Then just ask: *"create my voice"* or *"narrate this script with my voice"*.
 
 ## Start in 3 steps
 
 ```bash
-# 1. Get the skill (Claude Code, Codex, Hermes…)
-npx skills add afirmacc/ia-skill-clonagem-voz
+# 1. Get the skill (Claude Code, Codex, Hermes, Orca, OpenClaw…)
+npx skills add afirmacc/Mestre-Anderson-Clona-GeraVoz-Free
 
 # 2. Install the tool (macOS Apple Silicon). Asks before downloading the model (~3 GB).
-git clone https://github.com/afirmacc/ia-skill-clonagem-voz.git && ./ia-skill-clonagem-voz/installers/install-macos.sh
+git clone https://github.com/afirmacc/Mestre-Anderson-Clona-GeraVoz-Free.git && ./Mestre-Anderson-Clona-GeraVoz-Free/installers/install-macos.sh
 
 # (Already have the Qwen3-TTS 1.7B Base 8bit model? Add --model-dir=<folder> to skip the download.)
 
@@ -131,4 +154,4 @@ MIT — see [LICENSE](LICENSE). The code license gives no right to use anyone's 
 
 Conceived and created by **Mestre Anderson Menezes de Oliveira**, of [Afirma](https://afirma.cc), to give back to the community the knowledge received from friends, collaborators and everyone who shares technology generously. With the support of Bellete Ritter de Oliveira.
 
-If this skill helped you, leave a ⭐ and cite: *Local Voice Cloning — Mestre Anderson Menezes de Oliveira · afirma.cc*.
+If this skill helped you, leave a ⭐ and cite: *Mestre Anderson Clona GeraVoz Free — Mestre Anderson Menezes de Oliveira · afirma.cc*.

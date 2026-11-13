@@ -42,7 +42,7 @@ def diagnose() -> Diagnostic:
     architecture = platform.machine()
     commands = {name: shutil.which(name) for name in ("python3", "ffmpeg", "git", "brew", "hermes", "nvidia-smi")}
     missing = [name for name in ("python3", "ffmpeg", "git") if not commands[name]]
-    skill_dir = Path(os.environ.get("HERMES_SKILLS_DIR", Path.home() / ".hermes/skills/local")) / "clonar-voz-local"
+    skill_dir = Path(os.environ.get("HERMES_SKILLS_DIR", Path.home() / ".hermes/skills/local")) / "mestre-anderson-clona-geravoz-free"
 
     if system == "Darwin" and architecture == "arm64":
         backend, compatibility = "qwen3-mlx", "release-candidate"

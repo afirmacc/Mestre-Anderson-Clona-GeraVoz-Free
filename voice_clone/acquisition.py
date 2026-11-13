@@ -90,23 +90,37 @@ def _capture(output: Path, seconds: int, device: str) -> None:
         raise VoiceCloneError("Nada foi gravado.")
 
 
-def level_check(seconds: int = 5, device: str = ":default", language: str | None = None) -> dict:
-    """Teste rápido de volume antes da leitura completa: diz se dá para gravar ou o que ajustar."""
-    import tempfile
+def _levels(path: Path) -> tuple[float, float, float]:
+    """(nível da fala em dB, pico 0–1, frames em dB) de uma gravação curta."""
+    import numpy as np
 
-    first = READING[lang_code(language)].splitlines()[0]
-    print(f"Teste de volume ({seconds} s). Leia em voz de narrar: \"{first}\"")
-    with tempfile.TemporaryDirectory() as temp:
-        sample = Path(temp) / "teste.wav"
-        _capture(sample, seconds, device)
-        import numpy as np
-
-        samples, rate = _read(sample)
+    samples, rate = _read(path)
     frame = int(rate * 0.03)
     frames = samples[: samples.size // frame * frame].reshape(-1, frame)
     rms_db = 20 * np.log10(np.sqrt((frames ** 2).mean(axis=1)) + 1e-9)
-    noise_db, speech_db = float(np.percentile(rms_db, 10)), float(np.percentile(rms_db, 90))
-    peak = float(np.abs(samples).max())
+    return float(np.percentile(rms_db, 90)), float(np.abs(samples).max()), rms_db
+
+
+def level_check(seconds: int = 5, device: str = ":default", language: str | None = None) -> dict:
+    """Teste rápido antes da leitura: 1,5 s de silêncio (mede o fundo) e 5 s de fala (mede a voz).
+
+    O fundo é medido em silêncio de verdade. Medir no meio da fala deu alarme falso de
+    "ruído alto" no teste real (fundo −38 dB no teste, −58 dB na gravação).
+    """
+    import tempfile
+
+    import numpy as np
+
+    first = READING[lang_code(language)].splitlines()[0]
+    with tempfile.TemporaryDirectory() as temp:
+        quiet, voice = Path(temp) / "silencio.wav", Path(temp) / "fala.wav"
+        print("Fique em silêncio 2 segundos…")
+        _capture(quiet, 2, device)
+        _, _, quiet_db = _levels(quiet)
+        print(f"Agora leia em voz de narrar ({seconds} s): \"{first}\"")
+        _capture(voice, seconds, device)
+        speech_db, peak, _ = _levels(voice)
+    noise_db = float(np.median(quiet_db[len(quiet_db) // 4:]))  # pula o começo (clique de abrir o microfone)
     if peak >= 0.99:
         verdict, ready = "Estourando. Afaste o microfone ou baixe o volume de entrada.", False
     elif speech_db < -30:
@@ -114,6 +128,8 @@ def level_check(seconds: int = 5, device: str = ":default", language: str | None
                           "Ajustes do Sistema > Som > Entrada."), False
     elif noise_db > -50:
         verdict, ready = "Ruído de fundo alto. Desligue ventilador, ar ou TV, ou mude de lugar.", False
+    elif speech_db - noise_db < 25:
+        verdict, ready = "A voz está perto demais do ruído. Fale mais perto do microfone.", False
     else:
         verdict, ready = "Volume bom. Pode gravar.", True
     return {"speech_level_db": round(speech_db, 1), "noise_floor_db": round(noise_db, 1), "ready": ready,
