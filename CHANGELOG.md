@@ -2,6 +2,14 @@
 
 Este projeto segue a ideia de [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e pretende adotar versionamento semântico após o primeiro release funcional.
 
+## 0.4.1 — 2026-11-13
+
+### Corrigido
+
+- instalador: modelo só conta como baixado se os pesos estiverem completos (antes bastava a pasta existir, e um download pela metade passaria como pronto);
+- download por HTTP comum e retomável (`snapshot_download`): o download "xet" travou na instalação real;
+- `status` também não aceita modelo pela metade.
+
 ## 0.4.0 — 2026-11-13
 
 Baixar, colocar a voz e sair funcionando, com captação certa (pedido do Mestre Anderson Menezes de Oliveira após comparar duas vozes).
